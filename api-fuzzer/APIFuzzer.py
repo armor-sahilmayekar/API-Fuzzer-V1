@@ -17,7 +17,7 @@ if __name__ == '__main__':
     def signal_handler(sig, frame):
         sys.exit(0)
 
-    parser = argparse.ArgumentParser(description='APIFuzzer configuration')
+    parser = argparse.ArgumentParser(description='api-fuzzer configuration')
     parser.add_argument('-s', '--src_file',
                         type=str,
                         required=False,

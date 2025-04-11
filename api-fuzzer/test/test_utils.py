@@ -81,7 +81,7 @@ class BaseTest:
 
     def fuzz(self, api_resources, headers):
         """
-        Call APIFuzzer with the given api definition
+        Call api-fuzzer with the given api definition
         :type api_resources: dict
         :param headers: headers to add fuzz request
         """

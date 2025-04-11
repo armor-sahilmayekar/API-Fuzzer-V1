@@ -16,7 +16,7 @@ from bitstring import Bits
 
 from apifuzzer.version import get_version
 
-logger_name = "APIFuzzer"
+logger_name = "api-fuzzer"
 
 
 def secure_randint(minimum, maximum):

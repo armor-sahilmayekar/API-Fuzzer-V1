@@ -37,7 +37,7 @@ This has been closed sourced for usage by Armor, inc for internal testing.
 Latest version:
 
 ```shell
-pip3 install APIFuzzer
+pip3 install api-fuzzer
 ```
 Development version: 
 Fetch the most recent code from GitHub
@@ -46,7 +46,7 @@ $ git clone https://github.com/KissPeter/APIFuzzer.git
 ```
 Install requirements. If you don't have pip installed, then sudo apt-get install python3-pip -y 
 ```shell
-$ pip3 install -r APIFuzzer/requirements.txt
+$ pip3 install -r api-fuzzer/requirements.txt
 ```
 
 ### Using Docker
@@ -56,10 +56,10 @@ $ pip3 install -r APIFuzzer/requirements.txt
 Check the help (some of them are not implemented yet):
 ```shell
 
-$$ usage: APIFuzzer [-h] [-s SRC_FILE] [--src_url SRC_URL] [-r REPORT_DIR] [--level LEVEL] [-u ALTERNATE_URL] [-t TEST_RESULT_DST]
+$$ usage: api-fuzzer [-h] [-s SRC_FILE] [--src_url SRC_URL] [-r REPORT_DIR] [--level LEVEL] [-u ALTERNATE_URL] [-t TEST_RESULT_DST]
                  [--log {critical,fatal,error,warn,warning,info,debug,notset}] [--basic_output BASIC_OUTPUT] [--headers HEADERS] [-v ,--version]
 
-APIFuzzer configuration
+api-fuzzer configuration
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -93,7 +93,7 @@ $ python3 test/test_application.py
 Start the fuzzer:
 
 ```shell
-$ APIFuzzer -s test/test_api/openapi_v2.json -u http://127.0.0.1:5000/ -r /tmp/reports/ --log debug 
+$ api-fuzzer -s test/test_api/openapi_v2.json -u http://127.0.0.1:5000/ -r /tmp/reports/ --log debug 
 ```
 Check the reports:
 

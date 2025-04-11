@@ -1,6 +1,6 @@
 from apifuzzer.__init__ import __version__
 
-PROJECT = "APIFuzzer"
+PROJECT = "api-fuzzer"
 
 
 def get_version():

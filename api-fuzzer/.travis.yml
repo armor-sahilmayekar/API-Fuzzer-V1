@@ -18,7 +18,7 @@ before_install:
 install:
   - pip3 install -r requirements.txt
 script:
-  - ./APIFuzzer -h
+  - ./api-fuzzer -h
   - pip3 install -r test/requirements_for_test.txt
   - python3 test/test_application.py&
   - pytest  -x --hypothesis-show-statistics --cov-report html --cov=apifuzzer  --html=pytest.html --self-contained-html --durations=10 --show-capture=stdout -vv -rP test

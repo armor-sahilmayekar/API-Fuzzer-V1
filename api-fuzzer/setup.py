@@ -20,7 +20,7 @@ def get_readme():
     with open(os.path.join(here, "README.md"), "r") as f:
         skip_lines = True
         for line in f.read().splitlines():
-            if line.startswith('# APIFuzzer — HTTP API Testing Framework'):
+            if line.startswith('# api-fuzzer — HTTP API Testing Framework'):
                 skip_lines = False
             if skip_lines:
                 continue
@@ -39,7 +39,7 @@ def get_requirements():
 
 
 setup_options = dict(
-    name='APIFuzzer',
+    name='api-fuzzer',
     version=__version__,
     description='Fuzz test your application using Swagger or OpenAPI definition without coding',
     long_description=get_readme(),
@@ -47,7 +47,7 @@ setup_options = dict(
     author='Peter Kiss',
     author_email='peter.kiss@linuxadm.hu',
     url='https://github.com/KissPeter/APIFuzzer/',
-    scripts=['APIFuzzer'],
+    scripts=['api-fuzzer'],
     packages=find_packages(exclude=["test"]),
     install_requires=get_requirements(),
     license="GNU General Public License v3.0",

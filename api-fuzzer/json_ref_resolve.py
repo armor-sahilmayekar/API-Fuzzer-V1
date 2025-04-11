@@ -1,7 +1,7 @@
 from json_ref_dict import materialize, RefDict
 
-f1 = '/home/kissp/git/APIFuzzer/bug1_resolved.json'
-f2 = '/home/kissp/git/APIFuzzer/resolved_mp.json'
+f1 = '/home/kissp/git/api-fuzzer/bug1_resolved.json'
+f2 = '/home/kissp/git/api-fuzzer/resolved_mp.json'
 
 
 # schema = materialize(RefDict("https://json-schema.org/draft-04/schema#/"))
