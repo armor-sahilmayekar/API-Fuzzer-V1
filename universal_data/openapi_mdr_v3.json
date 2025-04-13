@@ -1,0 +1,596 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "MDR API: incident list",
+    "description": "MDR API: incident list",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://mdr-api.secure-dev.services/"
+    }
+  ],
+  "paths": {
+    "/incidents": {
+      "get": {
+        "summary": "Get list of incidents",
+        "parameters": [
+          {
+            "name": "sortBy",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "key"
+            },
+            "required": false
+          },
+          {
+            "name": "sortDirection",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc"
+            },
+            "required": false
+          },
+          {
+            "name": "startAt",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "0"
+            },
+            "required": false
+          },
+          {
+            "name": "priority",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "required": false
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Triage",
+                "Escalated",
+                "Closed"
+              ]
+            },
+            "required": false
+          },
+          {
+            "name": "tactic",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "required": false
+          },
+          {
+            "name": "organization",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "2645,2646"
+            },
+            "required": false,
+            "description": "It should be list of comma separated organization ids"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "20"
+            },
+            "required": false
+          },
+          {
+            "name": "textSearch",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "description": "Passing the string Armor Defense will search for all issues that contain the words Armor and Defense, in no particular order."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "All good",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "totalRows": {
+                      "type": "integer"
+                    },
+                    "issues": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "description": "E.g. SEC-12345"
+                          },
+                          "summary": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string",
+                            "description": "E.g. Closed"
+                          },
+                          "priority": {
+                            "type": "string",
+                            "description": "E.g. Medium"
+                          },
+                          "created": {
+                            "type": "string",
+                            "description": "ISO 8601"
+                          },
+                          "updated": {
+                            "type": "string",
+                            "description": "ISO 8601"
+                          },
+                          "assignee": {
+                            "type": "string",
+                            "description": "E.g. SOC Analyst 1"
+                          },
+                          "alertCount": {
+                            "type": "integer",
+                            "description": "Number of alerts in the incident"
+                          },
+                          "orgs": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "description": "E.g. Contoso"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "approvedOrgs": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "orgId": {
+                            "type": "string",
+                            "description": "9501"
+                          },
+                          "orgName": {
+                            "type": "string",
+                            "description": "Sample Demo Org"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters like invalid startAt"
+          }
+        }
+      }
+    },
+    "/incidents/{key}": {
+      "get": {
+        "summary": "Get details of an incident",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "All good",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "tenantId": {
+                      "type": "string",
+                      "example": "UUID-1234"
+                    },
+                    "incidentId": {
+                      "type": "string",
+                      "example": "123"
+                    },
+                    "displayName": {
+                      "type": "string",
+                      "example": "Detect latest failure events per connector"
+                    },
+                    "status": {
+                      "type": "string",
+                      "example": "Closed"
+                    },
+                    "createdDateTime": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2024-06-16T07:24:53.4433333Z"
+                    },
+                    "lastUpdateDateTime": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2024-06-16T07:24:53.4433333Z"
+                    },
+                    "severity": {
+                      "type": "string",
+                      "example": "Medium"
+                    },
+                    "mitreTactics": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "example": "Execution"
+                          },
+                          "techniques": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "example": "T1039"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "source": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "example": [
+                        "Defender for Endpoint",
+                        "Defender for Cloud"
+                      ]
+                    },
+                    "detectionSource": {
+                      "type": "string",
+                      "example": "SIEM"
+                    },
+                    "assignee": {
+                      "type": "string",
+                      "example": "SOC Analyst 1"
+                    },
+                    "ticketUpdatedDateTime": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2024-06-10T06:16:41.488-0500"
+                    },
+                    "ticketCreatedDateTime": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2024-06-10T06:16:41.488-0500"
+                    },
+                    "ticketFirstResponseDateTime": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2024-06-10T06:16:41.488-0500"
+                    },
+                    "ticketFirstAssignedDateTime": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2024-06-10T06:16:41.488-0500"
+                    },
+                    "ticketFirstTransitionedDateTime": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2024-06-10T06:16:41.488-0500"
+                    },
+                    "ticketDescription": {
+                      "type": "string",
+                      "example": "Sample Org has detected the following activity.\n\n*This incident may require immediate attention.*\nWe ask that you have someone ready to assist with any questions or further investigation by our team."
+                    },
+                    "ticketSummary": {
+                      "type": "string",
+                      "example": "[High] Incident: Multi-stage incident involving Persistence & Discovery on one endpoint reported by multiple sources"
+                    },
+                    "orgId": {
+                      "type": "string",
+                      "example": "9501"
+                    },
+                    "orgName": {
+                      "type": "string",
+                      "example": "Sample Demo Org"
+                    },
+                    "comments": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "example": "328531"
+                          },
+                          "authorDisplayName": {
+                            "type": "string",
+                            "example": "328531"
+                          },
+                          "body": {
+                            "type": "string",
+                            "example": "328531"
+                          },
+                          "created": {
+                            "type": "string",
+                            "example": "328531"
+                          },
+                          "updated": {
+                            "type": "string",
+                            "example": "328531"
+                          },
+                          "isPublic": {
+                            "type": "boolean",
+                            "example": true
+                          }
+                        }
+                      }
+                    },
+                    "alerts": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "example": "sn8b46ecca-43f6-483c-aa63-192bdc4ca8ff"
+                          },
+                          "category": {
+                            "type": "string",
+                            "example": "Impact"
+                          },
+                          "actorDisplayName": {
+                            "type": "string",
+                            "example": "unknown"
+                          },
+                          "classification": {
+                            "type": "string",
+                            "example": "unknown"
+                          },
+                          "createdDateTime": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2024-05-31T07:24:42.35Z"
+                          },
+                          "datatype": {
+                            "type": "string",
+                            "example": "mdrAlert"
+                          },
+                          "description": {
+                            "type": "string",
+                            "example": "Identifies when a rare Resource and ResourceGroup deployment occurs by a previously unseen Caller."
+                          },
+                          "detectionSource": {
+                            "type": "string",
+                            "example": "scheduledAlerts"
+                          },
+                          "detectorId": {
+                            "type": "string",
+                            "example": "87dc1909-0df2-4e91-af3f-c85a57829935_newresourcegroupsdeployedto"
+                          },
+                          "determination": {
+                            "type": "string",
+                            "example": "unknown"
+                          },
+                          "firstActivityDateTime": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2024-05-17T07:19:28.523984Z"
+                          },
+                          "incidentId": {
+                            "type": "string",
+                            "example": "728"
+                          },
+                          "lastActivityDateTime": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2024-05-31T07:19:28.523984Z"
+                          },
+                          "lastUpdateDateTime": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2024-06-14T02:48:58.82Z"
+                          },
+                          "mitreTechniques": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "example": [
+                              "T1496"
+                            ]
+                          },
+                          "productName": {
+                            "type": "string",
+                            "example": "Microsoft Sentinel"
+                          },
+                          "recommendedActions": {
+                            "type": "string",
+                            "example": "quarantine the resource"
+                          },
+                          "resolvedDateTime": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2024-06-14T02:48:58.82Z"
+                          },
+                          "serviceSource": {
+                            "type": "string",
+                            "example": "microsoftSentinel"
+                          },
+                          "severity": {
+                            "type": "string",
+                            "example": "low"
+                          },
+                          "status": {
+                            "type": "string",
+                            "example": "new"
+                          },
+                          "threatDisplayName": {
+                            "type": "string",
+                            "example": "sample threat family display name"
+                          },
+                          "threatFamilyName": {
+                            "type": "string",
+                            "example": "sample threat family name"
+                          },
+                          "title": {
+                            "type": "string",
+                            "example": "Suspicious Resource deployment"
+                          },
+                          "evidences": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "createdDateTime": {
+                                  "type": "string",
+                                  "format": "date-time",
+                                  "example": "2024-05-31T07:24:42.4933333Z"
+                                },
+                                "evidenceBody": {
+                                  "type": "string",
+                                  "example": "{}"
+                                },
+                                "odatatype": {
+                                  "type": "string",
+                                  "example": "ipEvidence"
+                                },
+                                "remediationStatus": {
+                                  "type": "string",
+                                  "example": "unknown"
+                                },
+                                "remediationStatusDetails": {
+                                  "type": "string",
+                                  "example": "Some String"
+                                },
+                                "verdict": {
+                                  "type": "string",
+                                  "example": "unknown"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "timeline": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "example": "First Assigned"
+                          },
+                          "type": {
+                            "type": "string",
+                            "example": "Alert"
+                          },
+                          "dateTime": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2024-05-31T07:24:42.4933333Z"
+                          }
+                        }
+                      }
+                    },
+                    "relatedIncidents": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "example": "[Low]: Suspicious Device Detected"
+                          },
+                          "url": {
+                            "type": "string",
+                            "example": "https://sandbox.atlassian.net/SEC-12345"
+                          }
+                        }
+                      }
+                    },
+                    "impactedAssets": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "example": "Device"
+                          },
+                          "displayName": {
+                            "type": "string",
+                            "example": "Test Machine"
+                          }
+                        }
+                      }
+                    },
+                    "actions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "example": "SOCAction"
+                          },
+                          "displayName": {
+                            "type": "string",
+                            "example": "Quarantine the Device"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key"
+      }
+    }
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ]
+}

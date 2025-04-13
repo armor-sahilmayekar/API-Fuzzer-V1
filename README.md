@@ -9,7 +9,6 @@ Whether you're building, securing, or validating APIs, this suite gives you the 
 ## 📦 Tools Included
 
 ### ✅ Functional Testing
-- **RestAssure+**: Lightweight wrapper for functional API tests using Java & RestAssured.
 - **Postman Runner CLI**: Run and validate Postman collections via command line.
 - **PyAPI Validator**: Python-based API test runner with schema validation support.
 
