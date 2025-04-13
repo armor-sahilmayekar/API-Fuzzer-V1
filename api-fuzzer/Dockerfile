@@ -1,4 +1,5 @@
 FROM python:3.11-slim-bullseye as builder
+RUN addgroup --system armorgroup && adduser --system --ingroup armorgroup armoruser
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PIP_NO_CACHE_DIR=1
 RUN apt update && apt upgrade -y  && apt install -y --no-install-recommends gcc libc6-dev libssl-dev libcurl4-openssl-dev && rm -rf /var/lib/apt/lists/*
@@ -26,5 +27,6 @@ RUN pip install /wheels/*
 COPY apifuzzer apifuzzer
 COPY APIFuzzer.py APIFuzzer
 COPY entrypoint.sh .
+USER armoruser
 ENTRYPOINT ["./entrypoint.sh"]
 HEALTHCHECK --interval=5s --timeout=5s --retries=3 --start-period=2s CMD pgrep APIFuzzer
