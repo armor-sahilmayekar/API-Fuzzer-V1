@@ -29,6 +29,7 @@ Whether you're building, securing, or validating APIs, this suite gives you the 
 ### Prerequisites
 - `Python 3.12+`
 - `Node.js` (for some JS-based tools)
+- `golang` (limited usage)
 - `Docker` (optional, for isolated testing environments)
 
 ### Cloning the Repo
@@ -36,14 +37,15 @@ Whether you're building, securing, or validating APIs, this suite gives you the 
 git clone https://github.com/your-org/api-testing-tools.git
 cd api-testing-tools
 
+
 api-testing-tools/
 │
-├── APIFuzzers/         # Coverage-guided API fuzzer
+├── api-fuzzer/         # Coverage-guided API fuzzer
 ├── jwt-manipulator/     # JWT attack testing utility
 ├── header-injector/     # Header fuzzing tool
 ├── postman-runner-cli/  # CLI runner for Postman collections
 ├── pyapi-validator/     # Functional testing with Python
 ├── restassure-plus/     # Java-based functional tests
-├── mockgen/             # OpenAPI mock server generator
+├── openapi-mock/             # OpenAPI mock server generator
 ├── ratelimit-tester/    # Stress & rate limit testing
 └── spec-analyzer/       # OpenAPI specification analyzer
