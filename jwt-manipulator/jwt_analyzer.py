@@ -1,4 +1,4 @@
-import jwt_tool
+import jwt  # Using pyjwt library
 import json
 from typing import Optional, Dict, Any
 
@@ -24,9 +24,10 @@ class JWTAnalyzer:
         :return: Decoded JWT payload as a dictionary, or None if decoding fails.
         """
         try:
-            self.decoded_payload = jwt_tool.decode(self.token, verify=False)
+            # Using pyjwt's decode method with verify=False to decode without signature verification
+            self.decoded_payload = jwt.decode(self.token, options={"verify_signature": False})
             return self.decoded_payload
-        except Exception as e:
+        except jwt.DecodeError as e:
             print(f"Error decoding JWT: {e}")
             return None
 
@@ -39,6 +40,22 @@ class JWTAnalyzer:
         parts = self.token.split(".")
         return len(parts) == 3
 
+    def dump_jwt(self) -> None:
+        """
+        Print the JWT token in a formatted manner (e.g., in three parts: header, payload, signature).
+
+        :return: None
+        """
+        parts = self.token.split(".")
+        if len(parts) == 3:
+            print("\n--- JWT Token Dump ---")
+            print(f"Header: {parts[0]}")
+            print(f"Payload: {parts[1]}")
+            print(f"Signature: {parts[2]}")
+            print("-----------------------")
+        else:
+            print("Invalid JWT structure. Unable to dump the token.")
+
     def test_jwt(self) -> Optional[Dict[str, Any]]:
         """
         Perform basic tests and dump the decoded JWT payload.
@@ -46,6 +63,9 @@ class JWTAnalyzer:
         :return: The decoded JWT payload if valid, or None if any test fails.
         """
         print("Testing JWT token...")
+
+        # Dump JWT token in formatted manner
+        self.dump_jwt()
 
         # Validate JWT structure
         if not self.validate_jwt_structure():

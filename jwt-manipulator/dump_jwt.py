@@ -11,6 +11,7 @@ def main() -> None:
 
     token = sys.argv[1]
     analyzer = JWTAnalyzer(token)
+    analyzer.dump_jwt()
     result = analyzer.test_jwt()
 
     if result is None:
