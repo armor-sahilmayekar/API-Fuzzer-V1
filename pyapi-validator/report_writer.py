@@ -7,7 +7,7 @@ from typing import Dict, Any
 class ReportWriter:
     def __init__(self, report_dir: str) -> None:
         """
-        Initializes the ReportWriter by creating a unique sub-directory inside the
+        Initializes the ReportWriter by creating a unique subdirectory inside the
         provided reports directory, based on the current datetime.
 
         Args:
