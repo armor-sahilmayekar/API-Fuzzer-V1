@@ -75,7 +75,7 @@ This will run all tests in the `test_api.py` file, ensuring that the components 
 2. Run the tests with the following command:
 
    ```bash
-   python main.py --reports_dir /path/to/reports/directory
+   python validate.py --reports_dir /path/to/reports/directory
    ```
 
    This will run the tests based on the test cases defined in the `test_cases.json` file and save the reports in the specified directory.

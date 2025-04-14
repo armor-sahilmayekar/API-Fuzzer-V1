@@ -72,7 +72,7 @@ class VulnerabilityScanner:
                 json.dump(data, f)
                 f.write('\n')
         except Exception as e:
-            logging.error(f"Error saving JSON report: {e}")
+            logging.error(f"Error saving JSON reports: {e}")
 
     def detect(self, url, wordlists):
         headers_list = self.get_headers_list(wordlists)
@@ -156,7 +156,7 @@ class ScannerCLI:
         parser.add_argument('-l', '--list', help='List of target URLs')
         parser.add_argument('-w', '--wordlists', help='Wordlist file containing header values', required=True)
         parser.add_argument('-a', '--attacker', help='Attacker domain', default=DEFAULT_ATTACKER)
-        parser.add_argument('-o', '--output', help='Reports directory where final test report will be output', default=DEFAULT_REPORT_DIR)
+        parser.add_argument('-o', '--output', help='Reports directory where final test reports will be output', default=DEFAULT_REPORT_DIR)
         parser.add_argument('-r', '--redirect', type=int, default=DEFAULT_REDIRECTS, help='Maximum number of redirects')
         parser.add_argument('-rc', '--recursive', action='store_true', help='Enable recursive scanning')
         parser.add_argument('-s', '--ssl', action='store_true', default=DEFAULT_SSL, help='Enable SSL verification')

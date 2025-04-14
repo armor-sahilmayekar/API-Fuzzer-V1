@@ -21,7 +21,7 @@ script:
   - ./api-fuzzer -h
   - pip3 install -r test/requirements_for_test.txt
   - python3 test/test_application.py&
-  - pytest  -x --hypothesis-show-statistics --cov-report html --cov=apifuzzer  --html=pytest.html --self-contained-html --durations=10 --show-capture=stdout -vv -rP test
+  - pytest  -x --hypothesis-show-statistics --cov-reports html --cov=apifuzzer  --html=pytest.html --self-contained-html --durations=10 --show-capture=stdout -vv -rP test
   - vulture --min-confidence 100 apifuzzer/ || true
 after_script:
   - coverage xml

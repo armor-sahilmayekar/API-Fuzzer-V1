@@ -2,7 +2,7 @@ FROM python:3.11-slim-bullseye as builder
 RUN addgroup --system armorgroup && adduser --system --ingroup armorgroup armoruser
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PIP_NO_CACHE_DIR=1
-RUN apt update && apt upgrade -y  && apt install -y --no-install-recommends gcc libc6-dev libssl-dev libcurl4-openssl-dev && rm -rf /var/lib/apt/lists/*
+RUN apt update && apt upgrade -y  && apt install -y --no-install-recommends gcc libc6-dev libssl-dev libcurl4-openssl-dev && rm -rf /var/modules/apt/lists/*
 WORKDIR /app
 COPY requirements.txt .
 RUN pip install --upgrade pip

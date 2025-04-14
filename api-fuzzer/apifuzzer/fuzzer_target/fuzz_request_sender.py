@@ -184,10 +184,10 @@ class FuzzerTarget(FuzzerTargetBase, ServerTarget):
                 self.report.set_status(Report.ERROR)
                 self.logger.error("Request failed, reason: {}".format(e))
                 self.report.add('request_sending_failed', e.msg if hasattr(e, 'msg') else str(e))
-                # self.report.add('request_sending_failed', e.msg if hasattr(e, 'msg') else e)
+                # self.reports.add('request_sending_failed', e.msg if hasattr(e, 'msg') else e)
                 self.report.add("request_method", method)
                 return
-            # overwrite request headers in report, add auto generated ones
+            # overwrite request headers in reports, add auto generated ones
             self.report.add(
                 "request_headers",
                 try_b64encode(json.dumps(dict(_return.request.headers))),
@@ -224,7 +224,7 @@ class FuzzerTarget(FuzzerTargetBase, ServerTarget):
 
     def post_test(self, test_num):
         """Called after a test is completed, perform cleanup etc."""
-        if self.report.get("report") is None:
+        if self.report.get("reports") is None:
             self.report.add("reason", self.report.get_status())
         super(ServerTarget, self).post_test(test_num)  # pylint: disable=E1003
         if self.junit_report_path:
@@ -254,7 +254,7 @@ class FuzzerTarget(FuzzerTargetBase, ServerTarget):
                 as report_dump_file:
                 report_dump_file.write(json.dumps(self.report.to_dict()))
         except Exception as e:
-            self.logger.error(f'Failed to save report "{self.report.to_dict()}" to {self.report_dir} because: {e}')
+            self.logger.error(f'Failed to save reports "{self.report.to_dict()}" to {self.report_dir} because: {e}')
 
     def report_add_basic_msg(self, msg):
         self.report.set_status(Report.FAILED)

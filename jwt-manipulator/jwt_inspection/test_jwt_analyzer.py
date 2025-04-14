@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import patch
-from jwt_analyzer import JWTAnalyzer  # Assuming the class is saved in jwt_analyzer.py
+from modules.api.authn import JWTAnalyzer  # Assuming the class is saved in authn.py
 
 
 @pytest.fixture

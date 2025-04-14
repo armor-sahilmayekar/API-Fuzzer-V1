@@ -1,40 +1,8 @@
 import os
 import json
 from typing import List
-import requests
-from report_writer import ReportWriter
-
-
-class APIClient:
-    def __init__(self, base_url: str, api_key: str) -> None:
-        """
-        Initializes the APIClient with the base URL of the API and the API key.
-
-        Args:
-            base_url (str): The base URL for the API.
-            api_key (str): The API key used for authentication in headers.
-        """
-        self.base_url = base_url
-        self.api_key = api_key
-
-    def send_request(self, method: str, endpoint: str, params: dict = None, headers: dict = None) -> requests.Response:
-        """
-        Sends an HTTP request to the API and returns the response.
-
-        Args:
-            method (str): The HTTP method (GET, POST, etc.).
-            endpoint (str): The API endpoint to be appended to the base URL.
-            params (dict, optional): The query parameters to be included in the request.
-            headers (dict, optional): The headers to be included in the request.
-
-        Returns:
-            requests.Response: The response object from the request.
-        """
-        url = os.path.join(self.base_url, endpoint)
-        if headers is None:
-            headers = {"Authorization": f"Bearer {self.api_key}"}
-        response = requests.request(method, url, params=params, headers=headers)
-        return response
+from modules.reports.writer import ReportWriter
+from modules.api.client import APIClient
 
 
 class TestRunner:
@@ -44,7 +12,7 @@ class TestRunner:
 
         Args:
             api_client (APIClient): The API client used to send requests.
-            report_writer (ReportWriter): The report writer that stores test results.
+            report_writer (ReportWriter): The reports writer that stores test results.
         """
         self.api_client = api_client
         self.report_writer = report_writer
@@ -88,7 +56,7 @@ class TestRunner:
 
     def run_tests(self, test_cases: List[dict]) -> None:
         """
-        Runs all test cases in the provided list and writes each report to disk.
+        Runs all test cases in the provided list and writes each reports to disk.
 
         Args:
             test_cases (List[dict]): A list of test cases, each being a dictionary containing
@@ -122,7 +90,7 @@ def main():
     base_url = "https://mdr-api.secure-dev.services/"
     api_key = os.getenv("API_KEY", "your_api_key_here")
 
-    # Initialize the API client and report writer
+    # Initialize the API client and reports writer
     api_client = APIClient(base_url, api_key)
     report_writer = ReportWriter(report_dir="./reports")
 

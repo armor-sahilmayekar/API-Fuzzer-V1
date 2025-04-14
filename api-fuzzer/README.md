@@ -129,7 +129,7 @@ Notes
 > * You need to attach a volume like in this example to share files and folders with the container:
 
 ```shell
-docker run --volume results:/results/ apifuzzer --src_url http://host.docker.internal:8000/openapi.json --url http://host.docker.internal:8000 --test_report /results/junit.xml --report /results/report/ ```
+docker run --volume results:/results/ apifuzzer --src_url http://host.docker.internal:8000/openapi.json --url http://host.docker.internal:8000 --test_report /results/junit.xml --reports /results/reports/ ```
 ```
 #### Tested service runs in other docker container
 Notes 
@@ -138,7 +138,7 @@ Notes
 > * You need to attach a volume like in this example to share files and folders with the container:
 
 ```shell
-docker run --volume results:/results/ kisspeter/apifuzzer --net fastapi-performance-optimization_default kisspeter/apifuzzer --src_url http://fastapi-performance-optimization:8000/openapi.json -u http://fastapi-performance-optimization:8000 --test_report /results/junit.xml --report /results/report/```
+docker run --volume results:/results/ kisspeter/apifuzzer --net fastapi-performance-optimization_default kisspeter/apifuzzer --src_url http://fastapi-performance-optimization:8000/openapi.json -u http://fastapi-performance-optimization:8000 --test_report /results/junit.xml --reports /results/reports/```
 ```
 
 [API Blueprint]: https://apiblueprint.org/

@@ -98,7 +98,7 @@ if __name__ == '__main__':
         exit(1)
     except Exception as e:
         print(f'Unexpected exception happened during fuzz test preparation: {traceback.print_stack(*sys.exc_info())}.\n'
-              f' Feel free to report the issue',)
+              f' Feel free to reports the issue',)
         exit(1)
     signal.signal(signal.SIGINT, signal_handler)
     prog.run()

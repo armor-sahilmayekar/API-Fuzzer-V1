@@ -1,5 +1,5 @@
 import sys
-from jwt_analyzer import JWTAnalyzer
+from modules.api.authn import JWTAnalyzer
 
 def main() -> None:
     """

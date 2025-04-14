@@ -11,17 +11,17 @@ class ApifuzzerReport(Report):
     def is_failed(self):
         """
         .. deprecated:: 0.6.7
-            use :func:`~kitty.data.report.Report.get_status`
+            use :func:`~kitty.data.reports.Report.get_status`
         """
         raise NotImplementedError("API was changed, use get_status instead")
 
     def to_dict(self, encoding="base64"):
         """
-        Return a dictionary version of the report
+        Return a dictionary version of the reports
 
         :param encoding: required encoding for the string values (default: 'base64')
         :rtype: dictionary
-        :return: dictionary representation of the report
+        :return: dictionary representation of the reports
         """
         res = {}
         for k, v in self._data_fields.items():

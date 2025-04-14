@@ -1,8 +1,11 @@
 import pytest
 import json
 from unittest.mock import MagicMock
-from main import APIClient, TestRunner, ReportWriter, load_test_cases
 
+#TODO fix this
+from validator import TestRunner, load_test_cases
+from modules.reports.writer import ReportWriter
+from modules.api.client import APIClient
 
 @pytest.fixture
 def mock_report_writer() -> MagicMock:
@@ -77,7 +80,7 @@ def test_run_tests(test_runner: TestRunner, mock_api_client: MagicMock, mock_rep
     # Check that the report_writer was called with the correct data
     mock_report_writer.write_report.assert_called_once()
 
-    # Verify that the report data contains expected values
+    # Verify that the reports data contains expected values
     report_data = mock_report_writer.write_report.call_args[0][0]
     assert report_data["state"] == "PASSED"
     assert report_data["test_number"] == 1
@@ -103,7 +106,7 @@ def test_load_test_cases() -> None:
             "expected_status": 200
         }
     ]
-    with open("test_cases.json", "w") as f:
+    with open("../test_cases.json", "w") as f:
         json.dump(test_cases_json, f)
 
     # Load test cases
