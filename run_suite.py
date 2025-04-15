@@ -17,6 +17,7 @@ API_SPEC_FILE = "data/openapi/openapi_mdr_v3.json"
 SOURCE: str="file"
 AUTH_HEADER = {}
 BASIC_OUTPUT = False
+JUNIT_REPORT = "./reports/junit_report.xml"
 
 
 def run_fuzzer():
@@ -30,7 +31,7 @@ def run_fuzzer():
                       auth_headers=AUTH_HEADER,
                       api_definition_url=API_SPEC_URL,
                       api_definition_file=API_SPEC_FILE,
-                      junit_report_path=REPORTS_DIR
+                      junit_report_path=JUNIT_REPORT
                       )
 
         prog.prepare()

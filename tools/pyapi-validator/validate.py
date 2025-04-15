@@ -35,6 +35,8 @@ class TestRunner:
 
         # Send the request
         response = self.api_client.send_request(method, endpoint, params=params)
+        
+        #run operator on output
 
         # Verify the response status
         result = {
@@ -54,7 +56,7 @@ class TestRunner:
 
         return result
 
-    def run_tests(self, test_cases: List[dict]) -> None:
+    def run(self, test_cases: List[dict]) -> None:
         """
         Runs all test cases in the provided list and writes each reports to disk.
 
@@ -64,6 +66,7 @@ class TestRunner:
 
         Returns:
             None
+
         """
         for test_case in test_cases:
             result = self.run_test(test_case)
@@ -99,7 +102,7 @@ def main():
 
     # Initialize the test runner and execute tests
     test_runner = TestRunner(api_client, report_writer)
-    test_runner.run_tests(test_cases)
+    test_runner.run(test_cases)
 
 
 if __name__ == "__main__":
