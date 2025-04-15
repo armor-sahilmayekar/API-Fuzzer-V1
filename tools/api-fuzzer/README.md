@@ -67,7 +67,7 @@ optional arguments:
                         API definition file path. JSON and YAML format is supported
   --src_url SRC_URL     API definition url. JSON and YAML format is supported
   -r REPORT_DIR, --report_dir REPORT_DIR
-                        Directory where error reports will be saved. Default is temporally generated directory
+                        Directory where error export will be saved. Default is temporally generated directory
   --level LEVEL         Test deepness: [1,2], the higher is the deeper (In progress)
   -u ALTERNATE_URL, --url ALTERNATE_URL
                         Use CLI defined url instead compile the url from the API definition. Useful for testing
@@ -93,17 +93,17 @@ $ python3 test/test_application.py
 Start the fuzzer:
 
 ```shell
-$ api-fuzzer -s test/test_api/openapi_v2.json -u http://127.0.0.1:5000/ -r /tmp/reports/ --log debug 
+$ api-fuzzer -s test/test_api/openapi_v2.json -u http://127.0.0.1:5000/ -r /tmp/export/ --log debug 
 ```
 Check the reports:
 
 ```shell
-$ ls -1 /tmp/reports/
+$ ls -1 /tmp/export/
 ```
 Report example:
 
 ```shell
-$ json_pp < /tmp/reports/79_1573993485.5391517.json
+$ json_pp < /tmp/export/79_1573993485.5391517.json
 {
    "response" : "Test application exception: invalid literal for int() with base 10: '0\\x00\\x10'",
    "sub_reports" : [],
@@ -129,7 +129,7 @@ Notes
 > * You need to attach a volume like in this example to share files and folders with the container:
 
 ```shell
-docker run --volume results:/results/ modules --src_url http://host.docker.internal:8000/openapi.json --url http://host.docker.internal:8000 --test_report /results/junit.xml --reports /results/reports/ ```
+docker run --volume results:/results/ modules --src_url http://host.docker.internal:8000/openapi.json --url http://host.docker.internal:8000 --test_report /results/junit.xml --export /results/export/ ```
 ```
 #### Tested service runs in other docker container
 Notes 
@@ -138,7 +138,7 @@ Notes
 > * You need to attach a volume like in this example to share files and folders with the container:
 
 ```shell
-docker run --volume results:/results/ kisspeter/modules --net fastapi-performance-optimization_default kisspeter/modules --src_url http://fastapi-performance-optimization:8000/openapi.json -u http://fastapi-performance-optimization:8000 --test_report /results/junit.xml --reports /results/reports/```
+docker run --volume results:/results/ kisspeter/modules --net fastapi-performance-optimization_default kisspeter/modules --src_url http://fastapi-performance-optimization:8000/openapi.json -u http://fastapi-performance-optimization:8000 --test_report /results/junit.xml --export /results/export/```
 ```
 
 [API Blueprint]: https://apiblueprint.org/

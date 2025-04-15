@@ -25,7 +25,7 @@ class JiraIntegration:
         """
         Create a new JIRA issue with the scan results.
 
-        :param report_data: The test reports data as a dictionary
+        :param report_data: The test export data as a dictionary
         :return: None
         """
         summary = "Automated Scan Report: {}".format(report_data.get("request_url"))
@@ -57,7 +57,7 @@ class JiraIntegration:
         Update an existing JIRA issue with the scan results.
 
         :param issue_key: JIRA issue ID to update
-        :param report_data: The test reports data as a dictionary
+        :param report_data: The test export data as a dictionary
         :return: None
         """
         url = f"{self.jira_url}/rest/api/3/issue/{issue_key}/comment"

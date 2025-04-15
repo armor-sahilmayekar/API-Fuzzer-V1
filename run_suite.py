@@ -5,9 +5,9 @@ from modules.api.client import APIClient
 from modules.fuzzer.exceptions import FailedToParseFileException
 from modules.fuzzer.fuzzer import Fuzzer
 from modules.api.spec import OpenAPISpecValidator
-from modules.reports.writer import ReportWriter
+from modules.export.writer import ReportWriter
 
-REPORTS_DIR = "reports"
+REPORTS_DIR = "export"
 ALTERNATE_URL = ""
 LOG_LEVEL = "INFO"
 TEST_LEVEL = 1
@@ -17,7 +17,7 @@ API_SPEC_FILE = "data/openapi/openapi_mdr_v3.json"
 SOURCE: str="file"
 AUTH_HEADER = {}
 BASIC_OUTPUT = False
-JUNIT_REPORT = "./reports/junit_report.xml"
+JUNIT_REPORT = "./export/junit_report.xml"
 
 
 def run_fuzzer():
@@ -40,7 +40,7 @@ def run_fuzzer():
         exit(1)
     except Exception as e:
         print(f'Unexpected exception happened during fuzz test preparation: {traceback.print_stack(*sys.exc_info())}.\n'
-              f' Feel free to reports the issue', )
+              f' Feel free to export the issue', )
         exit(1)
     prog.run()
 

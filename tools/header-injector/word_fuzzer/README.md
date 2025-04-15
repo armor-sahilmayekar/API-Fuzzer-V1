@@ -35,7 +35,7 @@ pip install -r requirements.txt
 ## Usage
 
 ```bash
-python scanner.py --url https://example.com --wordlists ../data/headers.txt --attacker evil.com --output ../reports
+python scanner.py --url https://example.com --wordlists ../data/headers.txt --attacker evil.com --output ../export
 ```
 
 ### Arguments

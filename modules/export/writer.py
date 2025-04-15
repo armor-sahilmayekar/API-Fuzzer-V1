@@ -8,10 +8,10 @@ class ReportWriter:
     def __init__(self, report_dir: str) -> None:
         """
         Initializes the ReportWriter by creating a unique subdirectory inside the
-        provided reports directory, based on the current datetime.
+        provided export directory, based on the current datetime.
 
         Args:
-            report_dir (str): The base directory where reports should be stored.
+            report_dir (str): The base directory where export should be stored.
         """
         # Create a timestamped folder like '2025-04-14_16-12-33'
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -22,20 +22,20 @@ class ReportWriter:
 
     def write_report(self, report_data: Dict[str, Any]) -> str:
         """
-        Writes an individual test reports to a JSON file inside the timestamped run directory.
+        Writes an individual test export to a JSON file inside the timestamped run directory.
 
         Args:
-            report_data (Dict[str, Any]): A dictionary containing all the test reports details.
+            report_data (Dict[str, Any]): A dictionary containing all the test export details.
                 Expected to include fields like 'name' and 'test_number'.
 
         Returns:
-            str: The full path to the written JSON reports file.
+            str: The full path to the written JSON export file.
         """
         # Create a filename using test number and test name for easy identification
         file_name = f"{report_data['test_number']:03d}_{report_data['name']}.json"
         file_path = os.path.join(self.run_dir, file_name)
 
-        # Write the reports to the JSON file
+        # Write the export to the JSON file
         with open(file_path, 'w') as f:
             json.dump(report_data, f, indent=2)
 

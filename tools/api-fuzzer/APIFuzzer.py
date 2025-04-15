@@ -31,7 +31,7 @@ if __name__ == '__main__':
     parser.add_argument('-r', '--report_dir',
                         type=str,
                         required=False,
-                        help='Directory where error reports will be saved. Default is temporally generated directory',
+                        help='Directory where error export will be saved. Default is temporally generated directory',
                         dest='report_dir',
                         default=tempfile.mkdtemp())
     parser.add_argument('--level',
@@ -98,7 +98,7 @@ if __name__ == '__main__':
         exit(1)
     except Exception as e:
         print(f'Unexpected exception happened during fuzz test preparation: {traceback.print_stack(*sys.exc_info())}.\n'
-              f' Feel free to reports the issue',)
+              f' Feel free to export the issue',)
         exit(1)
     signal.signal(signal.SIGINT, signal_handler)
     prog.run()

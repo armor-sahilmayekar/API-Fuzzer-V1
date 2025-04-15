@@ -1,7 +1,7 @@
 import os
 import json
 from typing import List
-from modules.reports.writer import ReportWriter
+from modules.export.writer import ReportWriter
 from modules.api.client import APIClient
 
 
@@ -12,7 +12,7 @@ class TestRunner:
 
         Args:
             api_client (APIClient): The API client used to send requests.
-            report_writer (ReportWriter): The reports writer that stores test results.
+            report_writer (ReportWriter): The export writer that stores test results.
         """
         self.api_client = api_client
         self.report_writer = report_writer
@@ -58,7 +58,7 @@ class TestRunner:
 
     def run(self, test_cases: List[dict]) -> None:
         """
-        Runs all test cases in the provided list and writes each reports to disk.
+        Runs all test cases in the provided list and writes each export to disk.
 
         Args:
             test_cases (List[dict]): A list of test cases, each being a dictionary containing
@@ -93,7 +93,7 @@ def main():
     base_url = "https://mdr-api.secure-dev.services/"
     api_key = os.getenv("API_KEY", "your_api_key_here")
 
-    # Initialize the API client and reports writer
+    # Initialize the API client and export writer
     api_client = APIClient(base_url, api_key)
     report_writer = ReportWriter(report_dir="./reports")
 

@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 #TODO fix this
 from validator import TestRunner, load_test_cases
-from modules.reports.writer import ReportWriter
+from modules.export.writer import ReportWriter
 from modules.api.client import APIClient
 
 @pytest.fixture
@@ -46,7 +46,7 @@ def test_runner(mock_api_client: MagicMock, mock_report_writer: MagicMock) -> Te
 
 def test_run_tests(test_runner: TestRunner, mock_api_client: MagicMock, mock_report_writer: MagicMock):
     """
-    Test the `run_tests` method of TestRunner to ensure reports are generated correctly.
+    Test the `run_tests` method of TestRunner to ensure export are generated correctly.
 
     Args:
         test_runner (TestRunner): The instance of TestRunner to be tested.
@@ -80,7 +80,7 @@ def test_run_tests(test_runner: TestRunner, mock_api_client: MagicMock, mock_rep
     # Check that the report_writer was called with the correct data
     mock_report_writer.write_report.assert_called_once()
 
-    # Verify that the reports data contains expected values
+    # Verify that the export data contains expected values
     report_data = mock_report_writer.write_report.call_args[0][0]
     assert report_data["state"] == "PASSED"
     assert report_data["test_number"] == 1

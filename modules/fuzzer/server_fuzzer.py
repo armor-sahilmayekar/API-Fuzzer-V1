@@ -81,8 +81,8 @@ class OpenApiServerFuzzer(ServerFuzzer):
 
     def _store_report(self, report):
         """
-        Enrich fuzz reports
-        :param report: reports to extend
+        Enrich fuzz export
+        :param report: export to extend
         """
         self.logger.debug("<in>")
         report.add("test_number", self.model.current_index())

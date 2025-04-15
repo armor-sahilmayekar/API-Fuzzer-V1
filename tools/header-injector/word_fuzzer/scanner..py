@@ -27,7 +27,7 @@ DEFAULT_REDIRECTS = 10
 DEFAULT_SSL = False
 DEFAULT_METHOD = 'GET'
 DEFAULT_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
-DEFAULT_REPORT_DIR = 'reports/'
+DEFAULT_REPORT_DIR = 'export/'
 
 
 class VulnerabilityScanner:
@@ -72,7 +72,7 @@ class VulnerabilityScanner:
                 json.dump(data, f)
                 f.write('\n')
         except Exception as e:
-            logging.error(f"Error saving JSON reports: {e}")
+            logging.error(f"Error saving JSON export: {e}")
 
     def detect(self, url, wordlists):
         headers_list = self.get_headers_list(wordlists)
@@ -156,7 +156,7 @@ class ScannerCLI:
         parser.add_argument('-l', '--list', help='List of target URLs')
         parser.add_argument('-w', '--wordlists', help='Wordlist file containing header values', required=True)
         parser.add_argument('-a', '--attacker', help='Attacker domain', default=DEFAULT_ATTACKER)
-        parser.add_argument('-o', '--output', help='Reports directory where final test reports will be output', default=DEFAULT_REPORT_DIR)
+        parser.add_argument('-o', '--output', help='Reports directory where final test export will be output', default=DEFAULT_REPORT_DIR)
         parser.add_argument('-r', '--redirect', type=int, default=DEFAULT_REDIRECTS, help='Maximum number of redirects')
         parser.add_argument('-rc', '--recursive', action='store_true', help='Enable recursive scanning')
         parser.add_argument('-s', '--ssl', action='store_true', default=DEFAULT_SSL, help='Enable SSL verification')
