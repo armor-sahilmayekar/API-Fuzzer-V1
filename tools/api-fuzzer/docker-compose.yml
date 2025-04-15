@@ -1,0 +1,8 @@
+version: '3.8'
+services:
+  apifuzzer:
+    image: apifuzzer:latest
+    container_name: modules
+    build:
+      context: .
+      dockerfile: Dockerfile
