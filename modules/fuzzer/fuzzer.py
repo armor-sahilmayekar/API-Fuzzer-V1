@@ -6,7 +6,7 @@ from modules.fuzzer.openapi_template_generator import OpenAPITemplateGenerator
 from modules.fuzzer.server_fuzzer import OpenApiServerFuzzer
 from modules.fuzzer.utils import set_logger
 from modules.fuzzer.version import get_version
-
+from modules.util.loggable import Loggable as log
 
 class Fuzzer(object):
     def __init__(
@@ -36,6 +36,7 @@ class Fuzzer(object):
         self.api_definition_file = api_definition_file
 
     def prepare(self):
+        log.info("Preparing Fuzzer")
         # here we will be able to branch the template generator if we will support other than Swagger / OpenAPI
         template_generator = OpenAPITemplateGenerator(
             api_definition_url=self.api_definition_url,

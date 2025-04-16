@@ -7,10 +7,12 @@ import tempfile
 import traceback
 from logging import _nameToLevel as levelNames
 
+from modules.util.config import EnvConfig, HeaderBuilder
 from modules.fuzzer.fuzz_utils import FailedToParseFileException
 from modules.fuzzer.fuzzer import Fuzzer
 from modules.fuzzer.utils import json_data, str2bool
 from modules.fuzzer.version import get_version
+from modules.util.loggable import Loggable as log
 
 if __name__ == '__main__':
 
@@ -80,13 +82,23 @@ if __name__ == '__main__':
         argparse.ArgumentTypeError('No API definition source provided -s, --src_file or --src_url should be defined')
         exit()
 
+    headers = {}
+    if args.headers is not None:
+        log.info("Using headers from command line")
+        headers = args.headers
+    else:
+        log.info("Using Environment Variables")
+        headers = HeaderBuilder(token=EnvConfig().token, account_id=EnvConfig().account_id,
+                                referrer="https://nexus.armorlabs.co/")
+    log.debug(f"Headers: {headers.sanitize_json()}")
+
     prog = Fuzzer(report_dir=args.report_dir,
                   test_level=args.level,
                   alternate_url=args.alternate_url,
                   test_result_dst=args.test_result_dst,
                   log_level=args.log_level,
                   basic_output=args.basic_output,
-                  auth_headers=args.headers,
+                  auth_headers=headers.to_dict(),
                   api_definition_url=args.src_url,
                   api_definition_file=args.src_file,
                   junit_report_path=args.test_result_dst
@@ -102,3 +114,5 @@ if __name__ == '__main__':
         exit(1)
     signal.signal(signal.SIGINT, signal_handler)
     prog.run()
+
+

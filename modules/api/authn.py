@@ -1,5 +1,6 @@
+import os
+import requests
 import time
-
 import jwt
 import json
 import datetime
@@ -208,3 +209,116 @@ class JWTAnalyzer:
         if not self.header:
             self.get_jwt_header()
         return self.header.get("alg") if self.header else None
+
+
+
+class OktaMFAClient:
+    """
+    OktaMFAClient handles user authentication via Okta with Multi-Factor Authentication (MFA),
+    and allows access to a protected API after successful authentication.
+
+    Usage:
+    -------
+    Set the following environment variables before running:
+        - OKTA_BASE_URL:        Your Okta domain, e.g., https://dev-123456.okta.com
+        - USER:                 Your Okta username
+        - PASS:                 Your Okta password
+        - PROTECTED_API_URL:   The API endpoint to call after authentication
+
+    Example:
+    --------
+    >>> client = OktaMFAClient(
+            base_url=os.getenv("OKTA_BASE_URL"),
+            username=os.getenv("USER"),
+            password=os.getenv("PASS"),
+            api_url=os.getenv("PROTECTED_API_URL")
+        )
+    >>> client.authenticate()
+    >>> response = client.call_protected_api()
+    >>> print(response)
+
+    Notes:
+    ------
+    - This implementation assumes the first available MFA factor will be used.
+    - Only Okta session token is used here; for OAuth2 token exchange, implement get_access_token().
+    - Intended for educational or internal tools. Use OAuth2 properly for production applications.
+    """
+
+    def __init__(self, base_url, username, password, api_url):
+        self.base_url = base_url.rstrip('/')
+        self.username = username
+        self.password = password
+        self.api_url = api_url
+        self.session_token = None
+        self.access_token = None
+
+    def authenticate(self):
+        """Authenticate user and trigger MFA if required."""
+        authn_url = f"{self.base_url}/api/v1/authn"
+        payload = {
+            "username": self.username,
+            "password": self.password,
+            "options": {
+                "multiOptionalFactorEnroll": True,
+                "warnBeforePasswordExpired": True
+            }
+        }
+        resp = requests.post(authn_url, json=payload)
+        resp.raise_for_status()
+        data = resp.json()
+
+        if data['status'] == 'MFA_REQUIRED':
+            factor = data['_embedded']['factors'][0]
+            factor_id = factor['id']
+            factor_type = factor['factorType']
+            verify_url = factor['_links']['verify']['href']
+
+            print(f"[+] MFA Required: {factor_type} - Sending verification...")
+
+            verify_resp = requests.post(verify_url, json={"stateToken": data['stateToken']})
+            verify_resp.raise_for_status()
+            verify_data = verify_resp.json()
+
+            print("[+] Waiting for MFA approval...")
+
+            while verify_data['status'] == 'MFA_CHALLENGE':
+                time.sleep(2)
+                poll_url = verify_data['_links']['next']['href']
+                verify_resp = requests.post(poll_url, json={"stateToken": data['stateToken']})
+                verify_resp.raise_for_status()
+                verify_data = verify_resp.json()
+
+            if verify_data['status'] == 'SUCCESS':
+                self.session_token = verify_data['sessionToken']
+                print("[+] MFA Success!")
+            else:
+                raise Exception("MFA Failed or not approved.")
+
+        elif data['status'] == 'SUCCESS':
+            self.session_token = data['sessionToken']
+            print("[+] Authentication Success!")
+
+        else:
+            raise Exception(f"Unhandled status: {data['status']}")
+
+    def get_access_token(self):
+        """
+        Placeholder for exchanging session token for an OAuth2 access token.
+
+        You must implement this depending on your Okta application's setup.
+        """
+        raise NotImplementedError("OAuth token exchange must be implemented based on your Okta setup.")
+
+    def call_protected_api(self):
+        """Call a protected API using the Okta session token."""
+        if not self.session_token:
+            raise Exception("Not authenticated. Call authenticate() first.")
+
+        headers = {
+            "Authorization": f"SSWS {self.session_token}",
+            "Content-Type": "application/json"
+        }
+
+        resp = requests.get(self.api_url, headers=headers)
+        resp.raise_for_status()
+        return resp.json()
