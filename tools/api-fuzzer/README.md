@@ -52,11 +52,24 @@ $ pip3 install -r api-fuzzer/requirements.txt
 ### Using Docker
 
 ## Quick Start
+This project uses .env files documented in the main [README.md](..%2F..%2FREADME.md).
+There is a super easy setup script that will install all the dependencies, setup a python virtual environment. 
+#### Required .env file variables
+- TOKEN is your JWT token and looks something like this TOKEN=eyJraWQiOiIzWmtnencwS....
+- ACCOUNT_ID is an integer value and is assosciated with the amp account id. For the dev account this is 2
 
-Check the help (some of them are not implemented yet):
 ```shell
+$$ touch .env
+$$ echo "TOKEN=mytoken" > .env
+$$ echo "ACCOUNT_ID=2" >> .env
+$$ sh run_local.sh
 
-$$ usage: api-fuzzer [-h] [-s SRC_FILE] [--src_url SRC_URL] [-r REPORT_DIR] [--level LEVEL] [-u ALTERNATE_URL] [-t TEST_RESULT_DST]
+
+```
+Check the help (some of them are not implemented yet):
+### Parameters possilbe
+```shell
+$$ usage: APIFuzzer.py [-h] [-s SRC_FILE] [--src_url SRC_URL] [-r REPORT_DIR] [--level LEVEL] [-u ALTERNATE_URL] [-t TEST_RESULT_DST]
                  [--log {critical,fatal,error,warn,warning,info,debug,notset}] [--basic_output BASIC_OUTPUT] [--headers HEADERS] [-v ,--version]
 
 api-fuzzer configuration

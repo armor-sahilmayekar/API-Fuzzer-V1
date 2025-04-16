@@ -49,3 +49,38 @@ api-testing-tools/
 ├── openapi-mock/             # OpenAPI mock server generator
 ├── ratelimit-tester/    # Stress & rate limit testing
 └── spec-analyzer/       # OpenAPI specification analyzer
+
+```
+
+### Using .env Files
+A .env file is a plain text file used to store application configuration settings and environment variables. It typically follows a key-value pair format, where each line represents a variable and its value. .env files are commonly used for local development, protecting sensitive information by not committing them to version control. 
+Key aspects of .env files:
+
+#### Format:
+Each line in a .env file consists of a variable name, an equals sign (=), and the variable's value. 
+
+#### Purpose:
+Used to store configuration data that varies between different environments (e.g., development, testing, production). 
+#### Security:
+.env files should not be committed to source control, as they often contain sensitive information like API keys or database credentials. 
+#### Tools:
+Libraries like `python-dotenv in Python or `dotenv in Node.js can be used to load variables from .env files into your application's environment. 
+
+Example:
+```dotenv
+    API_KEY=your_api_key
+    DATABASE_URL=your_database_url
+    DEBUG=true
+```
+#### Comments:
+Lines starting with # are treated as comments and ignored. 
+#### Escaping:
+Escape characters like \n need to be escaped in both single and double quotes. 
+#### Multiple .env files:
+Some frameworks (e.g., Astro) support using multiple .env files for different environments, like .env.development or .env.production. 
+#### File Naming:
+File extensions like .local are often used to indicate that a file contains local development configurations. 
+#### Prioritization:
+If the same variable is defined in multiple .env files, the one with the highest priority (e.g., environment-specific files) will take precedence. 
+Interpolation:
+Some tools (like Docker Compose) support variable interpolation within .env files, allowing you to use variables within other variable values. 
