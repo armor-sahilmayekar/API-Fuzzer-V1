@@ -120,7 +120,7 @@ $ json_pp < /tmp/export/79_1573993485.5391517.json
 {
    "response" : "Test application exception: invalid literal for int() with base 10: '0\\x00\\x10'",
    "sub_reports" : [],
-   "parsed_status_code" : 500,
+   "status_code" : 500,
    "state" : "COMPLETED",
    "test_number" : 79,
    "request_body" : null,
@@ -153,8 +153,3 @@ Notes
 ```shell
 docker run --volume results:/results/ kisspeter/modules --net fastapi-performance-optimization_default kisspeter/modules --src_url http://fastapi-performance-optimization:8000/openapi.json -u http://fastapi-performance-optimization:8000 --test_report /results/junit.xml --export /results/export/```
 ```
-
-[API Blueprint]: https://apiblueprint.org/
-[Swagger]: http://swagger.io/
-[OpenAPI]: https://swagger.io/docs/specification/about/
-[GraphQL]: https://graphql.org/

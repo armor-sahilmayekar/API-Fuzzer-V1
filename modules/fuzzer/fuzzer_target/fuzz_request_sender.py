@@ -9,10 +9,10 @@ from bitstring import Bits
 from junit_xml import TestSuite, TestCase, to_xml_report_file
 from kitty.targets.server import ServerTarget
 
-from modules.fuzzer.apifuzzerreport import ApifuzzerReport as Report
+from modules.fuzzer.apifuzzerreport import ApifuzzerReport as Report, ApifuzzerReport
 from modules.fuzzer.fuzzer_target.request_base_functions import FuzzerTargetBase
 from modules.fuzzer.utils import try_b64encode, init_pycurl, get_logger
-
+from modules.export.report import TestReport
 
 class Return:
     pass
@@ -23,7 +23,7 @@ class FuzzerTarget(FuzzerTargetBase, ServerTarget):
         _ = func_name
         pass
 
-    def __init__(self, name="target", base_url=None, report_dir=None, auth_headers=None, junit_report_path=None):
+    def __init__(self, name="target", base_url=None, report_dir="reports", auth_headers=None, junit_report_path="reports"):
         super(ServerTarget, self).__init__(name)  # pylint: disable=E1003
         super(FuzzerTargetBase, self).__init__(auth_headers)  # pylint: disable=E1003
         self.logger = get_logger(self.__class__.__name__)
@@ -42,7 +42,7 @@ class FuzzerTarget(FuzzerTargetBase, ServerTarget):
         Called when a test is started
         """
         self.test_number = test_num
-        self.report = Report(self.name or str(test_num))
+        self.report = ApifuzzerReport(str(test_num))
         if self.controller:
             self.controller.pre_test(test_number=self.test_number)
         for monitor in self.monitors:
@@ -202,6 +202,7 @@ class FuzzerTarget(FuzzerTargetBase, ServerTarget):
             self.report.add("request_body", _return.request.body)
             self.report.add("response", _return.content.decode())
             status_code = _return.status_code
+            self.report.add("response_code",  status_code)
             if not status_code:
                 self.logger.warning(f"Failed to parse http response code, continue...")
                 self.report.set_status(Report.ERROR)
@@ -213,6 +214,8 @@ class FuzzerTarget(FuzzerTargetBase, ServerTarget):
                 self.report_add_basic_msg(
                     ("Return code %s is not in the expected list:", status_code)
                 )
+            elif status_code == 500:
+                self.logger.error(f"Response code {status_code} for payload is {self.report}")
             return _return
         except (
             UnicodeDecodeError,
@@ -226,7 +229,8 @@ class FuzzerTarget(FuzzerTargetBase, ServerTarget):
         """Called after a test is completed, perform cleanup etc."""
         if self.report.get("export") is None:
             self.report.add("reason", self.report.get_status())
-        super(ServerTarget, self).post_test(test_num)  # pylint: disable=E1003
+        super(ServerTarget, self).post_test(test_num)
+        _base =  super(ServerTarget, self)
         if self.junit_report_path:
             report_dict = self.report.to_dict()
             test_case = TestCase(
@@ -245,14 +249,12 @@ class FuzzerTarget(FuzzerTargetBase, ServerTarget):
     def save_report_to_disc(self):
         self.logger.info("Report: {}".format(self.report.to_dict()))
         try:
-            if not os.path.exists(os.path.dirname(self.report_dir)):
-                try:
-                    os.makedirs(os.path.dirname(self.report_dir))
-                except OSError:
-                    pass
-            with open(f"{self.report_dir}/{str(self.test_number + 1).zfill(4)}_{int(time())}.json", "w") \
-                as report_dump_file:
-                report_dump_file.write(json.dumps(self.report.to_dict()))
+            self.logger.info(f'Report Dir: {self.report_dir}')
+            t = TestReport(self.report.get("name"), self.report_dir)
+            data = self.report.to_dict()
+
+            new = t.from_dict(data)
+            new.save()
         except Exception as e:
             self.logger.error(f'Failed to save export "{self.report.to_dict()}" to {self.report_dir} because: {e}')
 

@@ -91,17 +91,21 @@ if __name__ == '__main__':
         headers = HeaderBuilder(token=EnvConfig().token, account_id=EnvConfig().account_id,
                                 referrer="https://nexus.armorlabs.co/")
     log.debug(f"Headers: {headers.sanitize_json()}")
+    if args.report_dir is not None:
+        args.report_dir = "./reports"
+    if args.test_result_dst is not None:
+        args.test_result_dst = "./reports_test"
 
-    prog = Fuzzer(report_dir=args.report_dir,
+    prog = Fuzzer(report_dir="./reports",
                   test_level=args.level,
                   alternate_url=args.alternate_url,
-                  test_result_dst=args.test_result_dst,
-                  log_level=args.log_level,
-                  basic_output=args.basic_output,
+                  test_result_dst="./reports_test",
+                  log_level="info",
+                  basic_output=True,
                   auth_headers=headers.to_dict(),
                   api_definition_url=args.src_url,
                   api_definition_file=args.src_file,
-                  junit_report_path=args.test_result_dst
+                  junit_report_path="./reports_test"
                   )
     try:
         prog.prepare()
