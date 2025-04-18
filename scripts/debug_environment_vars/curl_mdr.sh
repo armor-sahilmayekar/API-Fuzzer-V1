@@ -13,6 +13,10 @@ echo "Optional Key PASS"
 source .env
 MDR_API_HOST="https://mdr.api.secure-dev.services"
 
+[ -z "$TOKEN" ] && echo "ERROR! TOKEN is not set" || echo "TOKEN is set"
+[ -z "$ACCOUNT_ID" ] && echo "ERROR! ACCOUNT_ID is not set" || echo "ACCOUNT_ID is set"
+[ -z "$MDR_API_HOST" ] && echo "ERROR! MDR_API_HOST is not set" || echo "MDR_API_HOST is set"
+
 echo 'curl "${MDR_API_HOST}/metrics/incidents" '
 echo "   -H "accept: application/json, text/plain, */*" "
 echo "   -H 'accept-language: en-US,en;q=0.9' "
