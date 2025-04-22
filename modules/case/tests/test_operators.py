@@ -19,7 +19,7 @@ def mock_response():
 @pytest.fixture
 def test_case_data():
     """Fixture to create sample test case data."""
-    expected = Expected(status_code=200, operators={"expected": "ok"})
+    expected = Expected(status_code=200, operators={"expected": {"status": "ok"}})
     return TestCaseData(
         test_number=1,
         name="Test GET request",
@@ -100,7 +100,7 @@ def test_test_case_data_from_dict():
 
 def test_execute_get_request(test_case, mock_response):
     """Test the execute method for a GET request."""
-    with patch.object(test_case, "_session.get", return_value=mock_response) as mock_get:
+    with patch.object(test_case._session, "get", return_value=mock_response) as mock_get:
         test_case.execute()
         mock_get.assert_called_once_with(test_case.url, headers=test_case.headers, timeout=10)
         assert test_case.response.status_code == 200
@@ -151,10 +151,10 @@ def test_exact_match_test_case(test_case_data):
 
     mock_response = requests.Response()
     mock_response.status_code = 200
-    mock_response._content = b'{"status": "ok"}'
+    mock_response._content = b'ok'
     test_case.collect_results(mock_response)
-
-    assert test_case.evaluate_results() is True
+    result = test_case.evaluate_results()
+    assert result is True
 
 
 def test_fuzzy_match_test_case(test_case_data):

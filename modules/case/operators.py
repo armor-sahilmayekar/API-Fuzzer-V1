@@ -8,6 +8,7 @@ from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 
 from modules.export.report import TestReport
+from modules.case.data_objects import Expected, TestCaseData, HTTPMethod
 from modules.util.loggable import Loggable as log
 
 
@@ -28,16 +29,21 @@ class TestCase(ABC):
             body: Any,
             parameter: str,
             expected: Expected
-    ):
+    ) -> object:
         self._test_number = test_number
         self._name = name
         self._jira_description = jira_description
-        self._method = method.upper()
+        self._method = HTTPMethod.get_method_property(method.upper())
         self._url = url
         self._headers = headers
         self._body = body
         self._parameter = parameter
-        self._expected = expected
+        if isinstance(expected, dict):
+            self._expected = Expected.from_dict(expected)
+        elif isinstance(expected, Expected):
+            self._expected = expected
+        else:
+            raise ValueError(f"Expected {type(Expected)} but got {type(expected)}")
         self._response: Optional[requests.Response] = None
 
         self._session = requests.Session()
@@ -184,18 +190,23 @@ class TestCase(ABC):
 class MatchTestCase(TestCase):
     """Test case that checks status code match only."""
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
     def evaluate_results(self) -> bool:
-        return self.response and self.response.status_code == self.expected.status_code
+        return bool(self.response and self.response.status_code == self.expected.status_code)
 
 
 class ExactMatchTestCase(TestCase):
     """Test case that requires exact response body match."""
 
     def evaluate_results(self) -> bool:
-        return (
+        response_value = self.response.text.strip()
+        expected_response_value = self.expected.operators.get("expected", "").strip()
+        return bool(
                 self.response and
                 self.response.status_code == self.expected.status_code and
-                self.response.text.strip() == self.expected.operators.get("expected", "").strip()
+                response_value == expected_response_value
         )
 
 

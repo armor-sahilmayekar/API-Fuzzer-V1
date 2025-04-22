@@ -1,5 +1,6 @@
 import json
 import os
+import re
 from typing import Dict, List
 
 from modules.case.operators import *
@@ -81,16 +82,32 @@ class TestCaseBuilder:
     @staticmethod
     def _strip_json_comments(data: str) -> str:
         """
-        Removes comments from JSON formatted text (removes lines that start with `##`).
+        Removes comments from JSON formatted text, including:
+        - Lines starting with '#' or '##'
+        - Trailing comments after JSON data on the same line.
 
         Args:
             data (str): The raw JSON data as a string.
 
         Returns:
-            str: The cleaned JSON data as a string.
+            str: The cleaned JSON data as a string without comments.
         """
         log.debug(f"Removing comments from {data}")
-        return "\n".join(line for line in data.splitlines() if not line.strip().startswith('#'))
+
+        # Remove entire lines that are comments (start with '#' or '##')
+        data = "\n".join(line for line in data.splitlines() if not line.strip().startswith('#'))
+
+        # Remove trailing comments (comments that are at the end of a line)
+        data = re.sub(r'\s*#.*$', '', data)
+        data = re.sub(r'#\s*([^\n]*)', '', data)
+
+        # Remove any leading or trailing newlines or spaces
+        data = data.strip()
+
+        # Ensure the JSON is formatted correctly (remove unnecessary newlines in between)
+        data = "\n".join(line.strip() for line in data.splitlines() if line.strip())
+
+        return data
 
     @staticmethod
     def build(data: Dict[str, Any]) -> List[TestCase]:

@@ -1,6 +1,6 @@
 import requests
 import json
-
+from modules.case.data_objects import Expected
 
 class JiraIntegration:
     def __init__(self, jira_url, jira_user, jira_token, project_key):
