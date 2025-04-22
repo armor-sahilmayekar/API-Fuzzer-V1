@@ -1,1 +1,6 @@
 pytest
+six
+requests
+kittyfuzzer
+python-dotenv
+urllib3

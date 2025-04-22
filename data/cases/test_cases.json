@@ -11,11 +11,11 @@
       "Accept": "attacker.com"
     },
     "body": {},
-    "parameter" "?sort=1",
+    "parameter": "?sort=1",
     "expected": {
       "status_code": 200,
       "operators": {
-        "type" : "contains",
+        "type" : "match",
         "expected": "somevalue"
       }
 
@@ -33,11 +33,11 @@
       "Accept": "attacker.com"
     },
     "body": {},
-    "parameter" "?sort=1",
+    "parameter": "?sort=1",
     "expected": {
       "status_code": 200,
       "operators": {
-        "type" : "exactly",
+        "type" : "fuzzy_match",
         "expected": "Sahil"
       }
 

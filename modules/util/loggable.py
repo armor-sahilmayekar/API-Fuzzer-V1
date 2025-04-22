@@ -11,7 +11,7 @@ class Loggable:
 
     Usage:
     ------
-    from loggable import Loggable
+    from loggable import Loggable as log
 
     Loggable.info("Starting app...")  # Logs with the calling class name as logger name
     Loggable.error("Something went wrong")  # Automatically uses the calling class's name
