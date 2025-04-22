@@ -83,10 +83,11 @@ celerybeat-schedule
 *.sage.py
 
 # dotenv
-.env
+tools/api-fuzzer/.env
 
 # virtualenv
 .venv
+.venv1
  .DS_Storels
 venv/
 ENV/
@@ -109,3 +110,5 @@ kittylogs
 .hypothesis
 .pytest_cache
 doc/*.rst
+
+reports
