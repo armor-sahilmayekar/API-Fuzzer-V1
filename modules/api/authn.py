@@ -1,29 +1,25 @@
-import json
-import secrets
-import time
-import webbrowser
-
-from modules.util.loggable import Loggable as log
-
-from dataclasses import dataclass
-from typing import Dict, Any, Union
-from typing import Optional
-from urllib.parse import urlencode
-
-import jwt
+import os
 import requests
-from werkzeug.datastructures import Accept
+import time
+import jwt
+import json
+import datetime
+from typing import Optional, Dict, Any, Union
+from modules.util.loggable import Loggable as log
+from dataclasses import dataclass
+from typing import Optional
 
 
 @dataclass
 class JWTClaims:
-    exp: Optional[int] = None  # Expiration Time
-    iat: Optional[int] = None  # Issued At
-    nbf: Optional[int] = None  # Not Before
-    aud: Optional[str] = None  # Audience
-    iss: Optional[str] = None  # Issuer
-    sub: Optional[str] = None  # Subject
-    jti: Optional[str] = None  # JWT ID
+    exp: Optional[int] = None   # Expiration Time
+    iat: Optional[int] = None   # Issued At
+    nbf: Optional[int] = None   # Not Before
+    aud: Optional[str] = None   # Audience
+    iss: Optional[str] = None   # Issuer
+    sub: Optional[str] = None   # Subject
+    jti: Optional[str] = None   # JWT ID
+
 
 
 class JWTAnalyzer:
@@ -215,6 +211,7 @@ class JWTAnalyzer:
         return self.header.get("alg") if self.header else None
 
 
+
 class OktaMFAClient:
     """
     OktaMFAClient handles user authentication via Okta with Multi-Factor Authentication (MFA),
@@ -252,10 +249,8 @@ class OktaMFAClient:
         self.username = username
         self.password = password
         self.api_url = api_url
-        self.api_url = 'https://mdr.console-demo.armorlabs.co/login/callback'
         self.session_token = None
         self.access_token = None
-        self.client_id = None
 
     def authenticate(self):
         """Authenticate user and trigger MFA if required."""
@@ -265,12 +260,10 @@ class OktaMFAClient:
             "password": self.password,
             "options": {
                 "multiOptionalFactorEnroll": True,
-                "warnBeforePasswordExpired": False
+                "warnBeforePasswordExpired": True
             }
         }
-
-        headers = {"Content-Type": "application/json", "Accept": "application/json"}
-        resp = requests.post(authn_url, json=payload, headers=headers)
+        resp = requests.post(authn_url, json=payload)
         resp.raise_for_status()
         data = resp.json()
 
@@ -308,92 +301,13 @@ class OktaMFAClient:
         else:
             raise Exception(f"Unhandled status: {data['status']}")
 
-    def get_access_token(self, client_id: str = 'None', redirect_uri: str = 'http://localhost', scope: str = "openid profile"):
-        """
-        Exchange the MFA-authenticated session token for an OAuth2 access token.
-
-        :param client_id: Okta OIDC client ID
-        :param redirect_uri: Redirect URI registered in the Okta app
-        :param scope: OAuth scopes (default: "openid profile")
-        :return: Access token string
-        """
-        if not self.session_token:
-            raise Exception("Session token missing. Call authenticate() first to complete MFA.")
-
-        token_url = f"{self.base_url}/oauth2/default/v1/token"
-        headers = {"Accept": "application/json", "Content-Type": "application/x-www-form-urlencoded"}
-        data = {
-            "grant_type": "authorization_code",
-            "redirect_uri": redirect_uri,
-            "client_id": client_id,
-            "session_token": self.session_token,
-            "scope": scope,
-            # For authorization_code flow, code_verifier and code are normally used here,
-            # but we're simulating it using session_token for a one-step access token request.
-        }
-
-        response = requests.post(token_url, data=data, headers=headers)
-        if response.status_code != 200:
-            print("[!] Failed to get access token.")
-            print(response.text)
-            response.raise_for_status()
-
-        token_data = response.json()
-        self.access_token = token_data.get("access_token")
-        print("[+] Access token acquired via session_token + MFA.")
-        return self.access_token
-
-    def mfa_authenticate(self):
-        code_verifier, code_challenge = self._generate_pkce_pair()
-
-        auth_url = (
-                f"{self.base_url}/oauth2/default/v1/authorize?"
-                + urlencode({
-            "client_id": self.client_id,
-            "redirect_uri": self.redirect_uri,
-            "response_type": "code",
-            "scope": self.scopes,
-            "code_challenge": code_challenge,
-            "code_challenge_method": "S256",
-            "state": secrets.token_urlsafe(16)
-        })
-        )
-
-        print(f"[+] Opening browser for authorization: {auth_url}")
-        webbrowser.open(auth_url)
-
-        httpd = self._start_local_http_server()
-        print("[*] Waiting for user authorization...")
-        httpd.handle_request()
-        auth_code = httpd.auth_code
-        if not auth_code:
-            raise Exception("Authorization code not received.")
-
-        token_url = f"{self.base_url}/oauth2/default/v1/token"
-        headers = {"Content-Type": "application/x-www-form-urlencoded"}
-        data = {
-            "grant_type": "authorization_code",
-            "client_id": self.client_id,
-            "redirect_uri": self.redirect_uri,
-            "code": auth_code,
-            "code_verifier": code_verifier
-        }
-
-        print("[+] Exchanging code for access token...")
-        resp = requests.post(token_url, data=data, headers=headers)
-        resp.raise_for_status()
-        tokens = resp.json()
-        self.token = tokens.get("access_token")
-        self.id_token = tokens.get("id_token")
-        print("[+] Access token obtained.")
-
-        return self.token
-
     def get_access_token(self):
-        return self.token
+        """
+        Placeholder for exchanging session token for an OAuth2 access token.
 
-    def get_id_token(self):
-        return self.id_token
+        You must implement this depending on your Okta application's setup.
+        """
+        raise NotImplementedError("OAuth token exchange must be implemented based on your Okta setup.")
 
     def call_protected_api(self):
         """Call a protected API using the Okta session token."""
