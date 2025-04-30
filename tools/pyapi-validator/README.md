@@ -100,7 +100,7 @@ Each test report is saved as a JSON file with the following structure:
     "sub_reports": [],
     "test_number": 1,
     "state": "PASSED",
-    "request_url": "https://mdr-api.secure-dev.services/incidents?status=Closed",
+    "request_url": "https://mdr.api.secure-dev.services/metrics/incidents?status=Closed",
     "request_method": "GET",
     "request_headers": "{"Authorization": "Bearer fake_api_key"}",
     "exception": "",
