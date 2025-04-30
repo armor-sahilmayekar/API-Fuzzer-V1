@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+<testsuites disabled="0" errors="0" failures="0" tests="4" time="9.582751749003364">
+	<testsuite disabled="0" errors="0" failures="0" name="API Fuzzer" skipped="0" tests="4" time="9.582751749003364" timestamp="1746009934.499841">
+		<testcase name="-1: https://mdr.api.secure-dev.services/incidents?tactic=asd&amp;organization=2645,2646&amp;priority=asd&amp;pageSize=20&amp;sortBy=key&amp;textSearch=asd&amp;sortDirection=desc&amp;status=asd&amp;startAt=0" time="2.588557" timestamp="1746009926.044394" status="passed"/>
+		<testcase name="0: https://mdr.api.secure-dev.services/incidents?tactic=asdasd&amp;organization=2645,2646&amp;priority=asd&amp;pageSize=20&amp;sortBy=key&amp;textSearch=asd&amp;sortDirection=desc&amp;status=asd&amp;startAt=0" time="1.923711" timestamp="1746009927.970217" status="passed"/>
+		<testcase name="1: https://mdr.api.secure-dev.services/incidents?tactic=asdasdasdasdasdasdasdasdasdasd&amp;organization=2645,2646&amp;priority=asd&amp;pageSize=20&amp;sortBy=key&amp;textSearch=asd&amp;sortDirection=desc&amp;status=asd&amp;startAt=0" time="2.486946" timestamp="1746009930.4597461" status="passed"/>
+		<testcase name="2: https://mdr.api.secure-dev.services/incidents?tactic=asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd&amp;organization=2645,2646&amp;priority=asd&amp;pageSize=20&amp;sortBy=key&amp;textSearch=asd&amp;sortDirection=desc&amp;status=asd&amp;startAt=0" time="2.583537" timestamp="1746009933.046747" status="passed"/>
+	</testsuite>
+</testsuites>

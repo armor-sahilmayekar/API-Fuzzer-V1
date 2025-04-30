@@ -1,0 +1,14 @@
+{
+  "status": "passed",
+  "name": "0",
+  "sub_reports": [],
+  "test_number": 0,
+  "state": "COMPLETED",
+  "request_url": "https://mdr.api.secure-dev.services/incidents?tactic=asdasd&organization=2645,2646&priority=asd&pageSize=20&sortBy=key&textSearch=asd&sortDirection=desc&status=asd&startAt=0",
+  "request_method": "GET",
+  "request_headers": "{\"User-Agent\": \"api-fuzzer 0.9.13\", \"Accept-Encoding\": \"gzip, deflate\", \"accept\": \"application/json\", \"Connection\": \"keep-alive\", \"accept-language\": \"en-US,en;q=0.9\", \"if-none-match\": \"W/\\\"1b0cd-mBw7Z/VQAsFNfEzG1bLwgN7+CR0\\\"\", \"internal\": \"true\", \"origin\": \"https://nexus.armorlabs.co/\", \"priority\": \"u=1, i\", \"referer\": \"https://nexus.armorlabs.co/\", \"x-account-context\": \"2\", \"authorization\": \"Bearer eyJraWQiOiIzWmtnencwSV80RVMzbUliQ1pTNDNhc1lqZG1OWUlCOXloTzJkMFpHelJFIiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiIwMHU0ODNxN2s5NjhqNUJyMjFkNyIsIm5hbWUiOiJ0ZXN0IGRldiIsImVtYWlsIjoidGVzdC5kZXZAYXJtb3IuY29tIiwidmVyIjoxLCJpc3MiOiJodHRwczovL2F1dGguY2VydC5hcm1vcmxhYnMuY28vb2F1dGgyL2RlZmF1bHQiLCJhdWQiOiIwb2ExOXQybDVyaVAzM3NibTFkNyIsImlhdCI6MTc0NTkxNTQ0NywiZXhwIjoxNzQ1OTE5MDQ3LCJqdGkiOiJJRC5XVmNMSzlzZmN1SDRVNE1ycmh6bnBxSVk1eEtJME5UWGJqRDBBakZJVFBRIiwiYW1yIjpbInB3ZCJdLCJpZHAiOiIwb2E0NjI5NG85aDZjSUNRUjFkNyIsInByZWZlcnJlZF91c2VybmFtZSI6InRlc3QuZGV2QGFybW9yLmNvbSIsImF1dGhfdGltZSI6MTc0NTkxNTQ0MCwiYXRfaGFzaCI6ImJETkJqa25QZWlRRElUSnJJR0FIX3ciLCJpc0VtcGxveWVlIjoiZmFsc2UiLCJzYW1BY2NvdW50TmFtZSI6InRlc3QuZGV2In0.Qbpoh4X20OPLRdUWGgIO9BP9rHArWjnU8QDOSnic-SWunVQNINcJeEamhgkdWu1Ku0lzD2RFxhfrMmQLX34UvIJGA0dIH5wQefeFM8zAMihlfip54N97L78QbCYn8T2W7bqxzKsgdP1MFZw01oNH85zCBz_RMMvtZ1ng9voIkdW3MG3xKbxIOReEIJCw7qT4S66vi6SJFG_W96wk7wzsfuwoO5TFSgmFQ0Y5zdwwZ_JDs4hkjlQYLr3MzXF45z03AFn7CZ82smYdZrP_-68x9os_KUA5s2mw33KvajvJvV_-JvGO4jyAeN5iFuRCgVBtzJHV3iB-wH1imAEEuQyUZA\"}",
+  "request_body": {},
+  "response": "",
+  "response_code": 401,
+  "reason": "passed"
+}
