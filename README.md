@@ -68,9 +68,14 @@ Libraries like `python-dotenv in Python or `dotenv in Node.js can be used to loa
 
 Example:
 ```dotenv
-    API_KEY=your_api_key
-    DATABASE_URL=your_database_url
-    DEBUG=true
+    TOKEN=...
+    USERNAME=...@armor.com
+    PASS=....
+    ACCOUNT_ID=2
+    LOG_LEVEL=INFO
+    OKTA_BASE_URL=https://armordefense.oktapreview.com/
+    OKTA_CLIENT_ID=0oa19t2l5riP33sbm1d7
+    OKTA_REDIRECT_URL=http://localhost:9000
 ```
 #### Comments:
 Lines starting with # are treated as comments and ignored. 
