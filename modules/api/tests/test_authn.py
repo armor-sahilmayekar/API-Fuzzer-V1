@@ -56,7 +56,7 @@ def test_check_claims(capfd, valid_jwt):
 
 def test_verify(valid_jwt):
     analyzer = JWTAnalyzer(valid_jwt)
-    assert analyzer.verify_jwt(algorithms=["HS256"]) is True
+    assert analyzer.verify_jwt(key=os.environ["JWT_SECRET"], algorithms=["HS256"]) is True
 
 
 def test_expiration(valid_jwt):
@@ -66,7 +66,7 @@ def test_expiration(valid_jwt):
 
 def test_reencode(valid_jwt):
     analyzer = JWTAnalyzer(valid_jwt)
-    new_token = analyzer.reencode_jwt()
+    new_token = analyzer.reencode_jwt(os.environ["JWT_SECRET"])
     assert new_token is not None
     assert isinstance(new_token, str)
 

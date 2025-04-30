@@ -5,7 +5,7 @@ import jwt
 import json
 import datetime
 from typing import Optional, Dict, Any, Union
-
+from modules.util.loggable import Loggable as log
 from dataclasses import dataclass
 from typing import Optional
 
@@ -47,7 +47,7 @@ class JWTAnalyzer:
             self.decoded_payload = jwt.decode(self.token, options={"verify_signature": False})
             return self.decoded_payload
         except jwt.DecodeError as e:
-            print(f"Error decoding JWT: {e}")
+            log.info(f"Error decoding JWT: {e}")
             return None
 
     def validate_jwt_structure(self) -> bool:
@@ -61,17 +61,17 @@ class JWTAnalyzer:
 
     def dump_jwt(self) -> None:
         """
-        Print the JWT token in a formatted manner (e.g., in three parts: header, payload, signature).
+        log.info the JWT token in a formatted manner (e.g., in three parts: header, payload, signature).
         """
         parts = self.token.split(".")
         if len(parts) == 3:
-            print("\n--- JWT Token Dump ---")
-            print(f"Header: {parts[0]}")
-            print(f"Payload: {parts[1]}")
-            print(f"Signature: {parts[2]}")
-            print("-----------------------")
+            log.info("\n--- JWT Token Dump ---")
+            log.info(f"Header: {parts[0]}")
+            log.info(f"Payload: {parts[1]}")
+            log.info(f"Signature: {parts[2]}")
+            log.info("-----------------------")
         else:
-            print("Invalid JWT structure. Unable to dump the token.")
+            log.error("Invalid JWT structure. Unable to dump the token.")
 
     def test_jwt(self) -> Optional[Dict[str, Any]]:
         """
@@ -79,20 +79,20 @@ class JWTAnalyzer:
 
         :return: Decoded JWT payload or None if test fails.
         """
-        print("Testing JWT token...")
+        log.info("Testing JWT token...")
         self.dump_jwt()
 
         if not self.validate_jwt_structure():
-            print("Invalid JWT structure.")
+            log.error("Invalid JWT structure.")
             return None
 
         decoded_token = self.load_jwt_token()
         if decoded_token is None:
-            print("Failed to decode JWT.")
+            log.error("Failed to decode JWT.")
             return None
 
-        print("Decoded JWT Payload:")
-        print(json.dumps(decoded_token, indent=2))
+        log.debug("Decoded JWT Payload:")
+        log.debug(json.dumps(decoded_token, indent=2))
         self.check_claims(decoded_token)
 
         return decoded_token
@@ -117,9 +117,9 @@ class JWTAnalyzer:
         # Verbose output
         for field, value in claims.__dict__.items():
             if value is not None:
-                print(f"{field.upper()} claim found: {value}")
+                log.debug(f"{field.upper()} claim found: {value}")
             else:
-                print(f"{field.upper()} claim not found.")
+                log.debug(f"{field.upper()} claim not found.")
 
         return claims
 
@@ -131,11 +131,11 @@ class JWTAnalyzer:
         """
         try:
             self.header = jwt.get_unverified_header(self.token)
-            print("JWT Header:")
-            print(json.dumps(self.header, indent=2))
+            log.debug("JWT Header:")
+            log.debug(json.dumps(self.header, indent=2))
             return self.header
         except jwt.DecodeError as e:
-            print(f"Error decoding JWT header: {e}")
+            log.error(f"Error decoding JWT header: {e}")
             return None
 
     def verify_jwt(self, key: Union[str, bytes], algorithms: Optional[list] = None) -> bool:
@@ -148,13 +148,13 @@ class JWTAnalyzer:
         """
         try:
             decoded = jwt.decode(self.token, key=key, algorithms=algorithms)
-            print("JWT successfully verified.")
-            print(json.dumps(decoded, indent=2))
+            log.info("JWT successfully verified.")
+            log.debug(json.dumps(decoded, indent=2))
             return True
         except jwt.ExpiredSignatureError:
-            print("JWT has expired.")
+            log.error("JWT has expired.")
         except jwt.InvalidTokenError as e:
-            print(f"Invalid JWT: {e}")
+            log.error(f"Invalid JWT: {e}")
         return False
 
     def is_expired(self) -> bool:
@@ -185,11 +185,11 @@ class JWTAnalyzer:
             self.get_jwt_header()
         try:
             new_token = jwt.encode(self.decoded_payload, secret, algorithm=algorithm, headers=self.header)
-            print("Re-encoded JWT:")
-            print(new_token)
+            log.info("Re-encoded JWT:")
+            log.debug(new_token)
             return new_token
         except Exception as e:
-            print(f"Error re-encoding JWT: {e}")
+            log.error(f"Error re-encoding JWT: {e}")
             return None
 
     def get_all_claims(self) -> Optional[Dict[str, Any]]:
@@ -235,7 +235,7 @@ class OktaMFAClient:
         )
     >>> client.authenticate()
     >>> response = client.call_protected_api()
-    >>> print(response)
+    >>> log.debug(response)
 
     Notes:
     ------
@@ -273,13 +273,13 @@ class OktaMFAClient:
             factor_type = factor['factorType']
             verify_url = factor['_links']['verify']['href']
 
-            print(f"[+] MFA Required: {factor_type} - Sending verification...")
+            log.info(f"[+] MFA Required: {factor_type} - Sending verification...")
 
             verify_resp = requests.post(verify_url, json={"stateToken": data['stateToken']})
             verify_resp.raise_for_status()
             verify_data = verify_resp.json()
 
-            print("[+] Waiting for MFA approval...")
+            log.info("[+] Waiting for MFA approval...")
 
             while verify_data['status'] == 'MFA_CHALLENGE':
                 time.sleep(2)
@@ -290,13 +290,13 @@ class OktaMFAClient:
 
             if verify_data['status'] == 'SUCCESS':
                 self.session_token = verify_data['sessionToken']
-                print("[+] MFA Success!")
+                log.info("[+] MFA Success!")
             else:
                 raise Exception("MFA Failed or not approved.")
 
         elif data['status'] == 'SUCCESS':
             self.session_token = data['sessionToken']
-            print("[+] Authentication Success!")
+            log.info("[+] Authentication Success!")
 
         else:
             raise Exception(f"Unhandled status: {data['status']}")
