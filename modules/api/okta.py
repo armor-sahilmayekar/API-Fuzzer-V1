@@ -1,81 +1,85 @@
 import time
 import urllib.parse
+
 import requests
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
 from pkce import generate_pkce_pair
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+
+from modules.util.loggable import Loggable as log
+
 
 class OktaSeleniumAuth:
     """
-    Automates the Okta OAuth2 Authorization Code flow using Selenium.
+    Automates the Okta OAuth2 authorization code flow using Selenium and PKCE.
 
-    This class performs a headless browser login to Okta to retrieve an authorization code,
-    which is then exchanged for an access token. It supports PKCE and optional scopes.
+    This class launches a headless browser session to perform login and 2FA,
+    then exchanges the resulting authorization code for an access token.
 
     Attributes:
-        okta_domain (str): Base URL of the Okta domain (e.g., https://your-org.okta.com).
-        client_id (str): OAuth2 client ID registered in Okta.
-        redirect_uri (str): Redirect URI registered with the OAuth2 client.
-        username (str): Okta username for login.
-        password (str): Okta password for login.
-        scopes (str): OAuth2 scopes (default: "openid profile email").
-        auth_server (str): Authorization server name (default: "default").
+        _okta_domain (str): The base URL of the Okta tenant.
+        _client_id (str): The OAuth2 client ID registered with Okta.
+        _redirect_uri (str): The URI to which the authorization code is sent.
+        _username (str): The username used to log into Okta.
+        _password (str): The password used to log into Okta.
+        _scopes (str): A space-separated list of OAuth2 scopes.
+        _auth_server (str): The Okta authorization server ID (e.g., 'default').
     """
 
     def __init__(self, okta_domain, client_id, redirect_uri, username, password,
                  scopes="openid profile email", auth_server="default"):
         """
-        Initializes the OktaSeleniumAuth object with configuration details.
+        Initializes the authentication helper.
 
         Args:
-            okta_domain (str): Okta domain (e.g., "https://your-org.okta.com").
+            okta_domain (str): Okta domain URL.
             client_id (str): OAuth2 client ID.
             redirect_uri (str): Redirect URI for the OAuth2 flow.
-            username (str): Okta account username.
-            password (str): Okta account password.
-            scopes (str): Requested OAuth2 scopes.
-            auth_server (str): Okta authorization server (default is "default").
+            username (str): Okta username.
+            password (str): Okta password.
+            scopes (str, optional): OAuth2 scopes. Defaults to "openid profile email".
+            auth_server (str, optional): Authorization server. Defaults to "default".
         """
-        self.okta_domain = okta_domain.rstrip('/')
-        self.client_id = client_id
-        self.redirect_uri = redirect_uri
-        self.username = username
-        self.password = password
-        self.scopes = scopes
-        self.auth_server = auth_server
+        self._okta_domain = okta_domain.rstrip('/')
+        self._client_id = client_id
+        self._redirect_uri = redirect_uri
+        self._username = username
+        self._password = password
+        self._scopes = scopes
+        self._auth_server = auth_server
 
     def build_auth_url(self, code_challenge, state):
         """
-        Builds the Okta authorization URL with PKCE parameters.
+        Constructs the OAuth2 authorization URL.
 
         Args:
-            code_challenge (str): Code challenge derived from the code verifier.
-            state (str): Opaque value to maintain state between request and callback.
+            code_challenge (str): PKCE code challenge string.
+            state (str): OAuth2 state parameter for CSRF protection.
 
         Returns:
-            str: Complete authorization URL.
+            str: Fully constructed authorization URL.
         """
         params = {
-            "client_id": self.client_id,
+            "client_id": self._client_id,
             "response_type": "code",
-            "scope": self.scopes,
-            "redirect_uri": self.redirect_uri,
+            "scope": self._scopes,
+            "redirect_uri": self._redirect_uri,
             "state": state,
             "code_challenge_method": "S256",
             "code_challenge": code_challenge
         }
-        return f"{self.okta_domain}/oauth2/{self.auth_server}/v1/authorize?" + urllib.parse.urlencode(params)
+        return f"{self._okta_domain}/oauth2/{self._auth_server}/v1/authorize?" + urllib.parse.urlencode(params)
 
     def automate_login(self, auth_url):
         """
-        Automates the login and 2FA process using Selenium and retrieves the final redirect URL.
+        Launches a headless browser, logs in via Selenium, and completes 2FA.
 
         Args:
-            auth_url (str): Okta authorization URL.
+            auth_url (str): The Okta authorization URL.
 
         Returns:
-            str: Final redirect URL containing the authorization code.
+            str: Final URL containing the authorization code as a query parameter.
         """
         driver = self._login(auth_url)
         current_url = self._2fa(driver)
@@ -84,54 +88,64 @@ class OktaSeleniumAuth:
 
     def _2fa(self, driver):
         """
-        Waits until the final URL contains an authorization code.
+        Waits for the user to complete multi-factor authentication.
 
         Args:
             driver (webdriver.Chrome): Selenium WebDriver instance.
 
         Returns:
-            str: Final URL containing the authorization code.
+            str: Final redirected URL after successful login and MFA.
         """
         count = 0
-        while not self.has_code_parameter(driver.current_url) and count < 100:
-            print(driver.current_url)
+        max_attempts = 100
+        while not self.has_code_parameter(driver.current_url) and count < max_attempts:
+            log.info(f"Waiting for user confirmation of MFA Code. Attempts left {max_attempts - count}")
+            log.debug(driver.current_url)
             time.sleep(1)
             count += 1
-            print(count)
+            log.debug(count)
         return driver.current_url
 
     def _login(self, auth_url):
         """
-        Launches a headless Chrome browser to perform Okta login steps.
+        Automates the Okta login page using Selenium in headless mode.
 
         Args:
-            auth_url (str): The authorization URL to load in the browser.
+            auth_url (str): The authorization URL.
 
         Returns:
-            webdriver.Chrome: Selenium WebDriver instance after submitting login.
+            webdriver.Chrome: The WebDriver after initiating MFA.
         """
         chrome_options = Options()
         chrome_options.add_argument("--headless")
         chrome_options.add_argument("--disable-gpu")
         driver = webdriver.Chrome(options=chrome_options)
         driver.get(auth_url)
+
+        log.info("Logging in...")
         time.sleep(2)
-        driver.find_element(By.ID, "okta-signin-username").send_keys(self.username)
-        driver.find_element(By.ID, "okta-signin-password").send_keys(self.password)
+
+        driver.find_element(By.ID, "okta-signin-username").send_keys(self._username)
+        driver.find_element(By.ID, "okta-signin-password").send_keys(self._password)
         driver.find_element(By.ID, "okta-signin-submit").click()
+
+        log.info("Logging in complete...")
         time.sleep(2)
+
+        log.info("Sending MFA confirmation via push...")
         driver.find_element(By.CLASS_NAME, "button-primary").click()
+
         return driver
 
     def has_code_parameter(self, url):
         """
-        Checks if the given URL contains an OAuth2 authorization code parameter.
+        Checks whether the given URL contains the OAuth2 authorization code.
 
         Args:
-            url (str): URL to inspect.
+            url (str): URL to check.
 
         Returns:
-            bool: True if 'code' is present in the query string, False otherwise.
+            bool: True if the 'code' query parameter is present, else False.
         """
         parsed_url = urllib.parse.urlparse(url)
         query_params = urllib.parse.parse_qs(parsed_url.query)
@@ -142,21 +156,18 @@ class OktaSeleniumAuth:
         Exchanges the authorization code for an access token.
 
         Args:
-            code (str): Authorization code received from Okta.
-            code_verifier (str): Original code verifier used in PKCE flow.
+            code (str): The authorization code from the redirect URL.
+            code_verifier (str): The PKCE code verifier used in the auth flow.
 
         Returns:
-            str: Access token returned by Okta.
-
-        Raises:
-            requests.HTTPError: If the HTTP request fails.
+            str: The access token returned from Okta.
         """
-        token_url = f"{self.okta_domain}/oauth2/{self.auth_server}/v1/token"
+        token_url = f"{self._okta_domain}/oauth2/{self._auth_server}/v1/token"
         data = {
             "grant_type": "authorization_code",
             "code": code,
-            "redirect_uri": self.redirect_uri,
-            "client_id": self.client_id,
+            "redirect_uri": self._redirect_uri,
+            "client_id": self._client_id,
             "code_verifier": code_verifier
         }
         response = requests.post(token_url, data=data)
@@ -165,27 +176,23 @@ class OktaSeleniumAuth:
 
     def authorize(self):
         """
-        Performs the full authorization code flow:
-        - Generates PKCE pair
-        - Builds authorization URL
-        - Automates browser login and 2FA
-        - Extracts authorization code
-        - Exchanges code for access token
+        Performs the full OAuth2 authorization code flow using Selenium and PKCE.
 
         Returns:
-            str: Access token retrieved from Okta.
+            str: The final access token obtained from Okta.
 
         Raises:
-            RuntimeError: If the authorization code is not found in the final URL.
+            RuntimeError: If the authorization code could not be extracted.
         """
         code_verifier, code_challenge = generate_pkce_pair()
         state = "xyz123"
         auth_url = self.build_auth_url(code_challenge, state)
-        final_url = self.automate_login(auth_url)
 
+        final_url = self.automate_login(auth_url)
         parsed = urllib.parse.urlparse(final_url)
         query = urllib.parse.parse_qs(parsed.query)
         code = query.get("code", [None])[0]
+
         if not code:
             raise RuntimeError("Authorization code not found in redirect URL.")
 
