@@ -1,16 +1,20 @@
+import time
+import urllib.parse
+
+import requests
+from pkce import generate_pkce_pair
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
-import time
-import urllib.parse
-import requests
-from pkce import generate_pkce_pair
 
 from modules.util.config import EnvConfig
+from modules.util.loggable import Loggable as log
+
 
 
 class OktaSeleniumAuth:
-    def __init__(self, okta_domain, client_id, redirect_uri, username, password, scopes="openid profile email", auth_server="default"):
+    def __init__(self, okta_domain, client_id, redirect_uri, username, password, scopes="openid profile email",
+                 auth_server="default"):
         self.okta_domain = okta_domain.rstrip('/')
         self.client_id = client_id
         self.redirect_uri = redirect_uri
@@ -32,6 +36,7 @@ class OktaSeleniumAuth:
         return f"{self.okta_domain}/oauth2/{self.auth_server}/v1/authorize?" + urllib.parse.urlencode(params)
 
     def automate_login(self, auth_url):
+
         driver = self._login(auth_url)
         current_url = self._2fa(driver)
         driver.quit()
@@ -39,26 +44,31 @@ class OktaSeleniumAuth:
 
     def _2fa(self, driver):
         count = 0
+        max_attempts = 100
         while not self.has_code_parameter(driver.current_url) and count < 100:
-            print(driver.current_url)
+            log.info(f"Waiting of user confirmation of MFA Code. Attempts left {max_attempts - count}")
+            log.debug(driver.current_url)
             time.sleep(1)
             count += 1
-            print(count)
+            log.debug(count)
         current_url = driver.current_url
         return current_url
 
     def _login(self, auth_url):
         chrome_options = Options()
-        chrome_options.add_argument("--headless")
+        # chrome_options.add_argument("--headless")
         chrome_options.add_argument("--disable-gpu")
         driver = webdriver.Chrome(options=chrome_options)
         driver.get(auth_url)
+        log.info("Logging in...")
         # Wait for login page and enter credentials
         time.sleep(2)
         driver.find_element(By.ID, "okta-signin-username").send_keys(self.username)
         driver.find_element(By.ID, "okta-signin-password").send_keys(self.password)
         driver.find_element(By.ID, "okta-signin-submit").click()
+        log.info("Logging in complete...")
         time.sleep(2)
+        log.info("Sending MFA confirmation via push...")
         driver.find_element(By.CLASS_NAME, "button-primary").click()
         return driver
 
@@ -71,6 +81,7 @@ class OktaSeleniumAuth:
 
         # Check if 'code' is a key in the query parameters
         return 'code' in query_params
+
     def exchange_code_for_token(self, code, code_verifier):
         token_url = f"{self.okta_domain}/oauth2/{self.auth_server}/v1/token"
         data = {
@@ -117,12 +128,4 @@ if __name__ == "__main__":
     )
 
     token = auth.authorize()
-    print("Access Token:\n", token)
-
-    config = EnvConfig()
-    okta_domain = config.okta_base_url
-    client_id = config.okta_client_id
-    redirect_uri = config.okta_redirect_url
-    scopes = ["openid", "profile", "email"]  # and any custom scopes you need
-    username = config.user
-    password = config.password
+    print(f"Access Token:{token}\n")
