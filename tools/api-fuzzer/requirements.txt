@@ -6,4 +6,7 @@ jsonpath-ng==1.5.2
 PyYAML==6.0.2
 json-ref-dict>=0.7.1
 python-dotenv
+jira
+pytest
+requests
 setuptools
