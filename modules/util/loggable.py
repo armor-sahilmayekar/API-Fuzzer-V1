@@ -1,9 +1,11 @@
-import logging
-import sys
 import inspect
+import logging
 import os
+import sys
+
 from selenium.webdriver.remote.remote_connection import LOGGER as seleniumLogger
 from urllib3.connectionpool import log as urllibLogger
+
 
 class Loggable:
     """
@@ -29,6 +31,7 @@ class Loggable:
 
     _initialized = False
     log_level = logging.WARN
+
     @staticmethod
     def _init_logger():
         if not Loggable._initialized:

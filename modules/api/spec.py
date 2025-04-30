@@ -1,9 +1,12 @@
 import json
-import yaml
-import requests
 from pathlib import Path
 from typing import Optional, Any, List, Literal
-from openapi_schema_validator import OAS30Validator, OAS31Validator, validate
+
+import requests
+import yaml
+from openapi_schema_validator import OAS30Validator, OAS31Validator
+
+from modules.util.loggable import Loggable as log
 
 
 class OpenAPISpecValidator:
@@ -79,9 +82,9 @@ class OpenAPISpecValidator:
             raise ValueError("OpenAPI version not found in spec.")
 
         if self.version.startswith("3.0"):
-            return OAS30Validator
+            return OAS30Validator(self.spec)
         elif self.version.startswith("3.1"):
-            return OAS31Validator
+            return OAS31Validator(self.spec)
         else:
             raise ValueError(f"Unsupported OpenAPI version: {self.version}")
 
@@ -98,9 +101,15 @@ class OpenAPISpecValidator:
         validator = self.get_validator()
 
         try:
-            validate(self.spec, validator=validator)
+            if not self.spec:
+                self.load_spec()
+            validator.validate(self.spec)
+
             return True
         except ValidationError as e:
+            self.errors.append(str(e))
+            return False
+        except Exception as e:
             self.errors.append(str(e))
             return False
 
@@ -115,18 +124,18 @@ class OpenAPISpecValidator:
 
     def run(self) -> None:
         """
-        Run the full validation pipeline and print results to the console.
+        Run the full validation pipeline and log.info results to the console.
         """
         try:
             self.load_spec()
             if self.validate():
-                print("✅ OpenAPI specification is valid.")
+                log.info("✅ OpenAPI specification is valid.")
             else:
-                print("❌ OpenAPI specification is invalid.")
+                log.info("❌ OpenAPI specification is invalid.")
                 for err in self.get_errors():
-                    print(f"  - {err}")
+                    log.info(f"  - {err}")
         except Exception as e:
-            print(f"❌ Error: {e}")
+            log.info(f"❌ Error: {e}")
 
 
 class ValidationError(Exception):
