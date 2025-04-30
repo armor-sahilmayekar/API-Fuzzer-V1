@@ -65,11 +65,11 @@ class JWTAnalyzer:
         """
         parts = self.token.split(".")
         if len(parts) == 3:
-            log.info("\n--- JWT Token Dump ---")
-            log.info(f"Header: {parts[0]}")
-            log.info(f"Payload: {parts[1]}")
-            log.info(f"Signature: {parts[2]}")
-            log.info("-----------------------")
+            log.debug("\n--- JWT Token Dump ---")
+            log.debug(f"Header: {parts[0]}")
+            log.debug(f"Payload: {parts[1]}")
+            log.debug(f"Signature: {parts[2]}")
+            log.debug("-----------------------")
         else:
             log.error("Invalid JWT structure. Unable to dump the token.")
 
