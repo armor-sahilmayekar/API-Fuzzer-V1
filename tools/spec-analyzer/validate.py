@@ -80,9 +80,9 @@ class OpenAPISpecValidator:
             raise ValueError("OpenAPI version not found in spec.")
 
         if self.version.startswith("3.0"):
-            return OAS30Validator
+            return OAS30Validator(self.spec)
         elif self.version.startswith("3.1"):
-            return OAS31Validator
+            return OAS31Validator(self.spec)
         else:
             raise ValueError(f"Unsupported OpenAPI version: {self.version}")
 
@@ -99,9 +99,15 @@ class OpenAPISpecValidator:
         validator = self.get_validator()
 
         try:
-            validate(self.spec, validator=validator)
+            if not self.spec:
+                self.load_spec()
+            validator.validate(self.spec)
+
             return True
         except ValidationError as e:
+            self.errors.append(str(e))
+            return False
+        except Exception as e:
             self.errors.append(str(e))
             return False
 
