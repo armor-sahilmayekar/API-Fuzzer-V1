@@ -2,6 +2,7 @@ import json
 import os
 from typing import Dict, List
 
+from modules.case.framework import TestCaseBuilder
 from modules.case.operators import *
 from modules.util.loggable import Loggable as log
 

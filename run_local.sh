@@ -4,22 +4,22 @@
 set -e
 
 echo "======================================"
-echo "🚀 Starting APIFuzzer environment setup"
+echo "🚀 Starting Test Suite Environment Setup"
 echo "======================================"
 
 # Move to project root (2 levels up from this script's location)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR" && pwd)"
 cd "$PROJECT_ROOT"
 
 echo "[*] Changed working directory to project root: $PROJECT_ROOT"
 
 # Define paths from project root
 VENV_DIR="$PROJECT_ROOT/.venv"
-APP_DIR="$PROJECT_ROOT/tools/api-fuzzer"
-REQUIREMENTS_FILE="$APP_DIR/requirements.txt"
+REQUIREMENTS_FILE="$PROJECT_ROOT/requirements.txt"
+APP_DIR="$PROJECT_ROOT"
 MODULES_DIR="$PROJECT_ROOT/modules"
-APP_ENTRY="$APP_DIR/APIFuzzer.py"
+APP_ENTRY="$APP_DIR/run_suite.py"
 
 echo "[*] Virtual environment directory: $VENV_DIR"
 echo "[*] Requirements file: $REQUIREMENTS_FILE"
@@ -67,7 +67,7 @@ echo "[*] PATH set to: $PATH"
 
 echo "======================================"
 echo "✅ Environment setup complete"
-echo "▶️ Launching APIFuzzer..."
+echo "▶️ Launching Test Suite..."
 echo "======================================"
 
 # Load environment variables from .env if it exists
@@ -81,5 +81,6 @@ else
   echo "[!] .env file not found at $ENV_FILE — skipping"
 fi
 
-# Run the APIFuzzer
-python tools/api-fuzzer/APIFuzzer.py --src_file data/openapi/openapi_mdr_v3.json -u https://mdr.api.secure-dev.services/ --log debug
+# Run the suite
+echo "[*] Loading environment variables from $ENV_FILE"
+python $APP_ENTRY

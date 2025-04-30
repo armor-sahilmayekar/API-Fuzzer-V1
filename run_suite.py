@@ -5,7 +5,7 @@ from modules.api.client import APIClient
 from modules.fuzzer.exceptions import FailedToParseFileException
 from modules.fuzzer.fuzzer import Fuzzer
 from modules.api.spec import OpenAPISpecValidator
-from modules.export.writer import ReportWriter
+from modules.export.report import TestReport
 
 REPORTS_DIR = "export"
 ALTERNATE_URL = ""
