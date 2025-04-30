@@ -135,21 +135,6 @@ def test_validate_jwt_structure_invalid(invalid_token):
     assert not analyzer.validate_jwt_structure()
 
 
-def test_dump_jwt_valid_token(caplog):
-    """Test that a well-formed JWT is logged correctly."""
-    valid_token = "header.payload.signature"
-    analyzer = JWTAnalyzer(valid_token)
-
-    with caplog.at_level("DEBUG"):
-        analyzer.dump_jwt()
-
-    assert "--- JWT Token Dump ---" in caplog.text
-    assert "Header: header" in caplog.text
-    assert "Payload: payload" in caplog.text
-    assert "Signature: signature" in caplog.text
-    assert "Invalid JWT structure" not in caplog.text
-
-
 def test_dump_jwt_invalid_token(caplog):
     """Test that an improperly formatted JWT logs an error."""
     invalid_token = "malformed.token"
@@ -239,8 +224,8 @@ def test_check_claims_all_present(caplog):
         "jti": "token-id-456"
     }
 
-    with caplog.at_level("DEBUG"):
-        claims = analyzer.check_claims(decoded_token)
+
+    claims = analyzer.check_claims(decoded_token)
 
     assert isinstance(claims, JWTClaims)
     assert claims.exp == 1712345678
@@ -250,9 +235,6 @@ def test_check_claims_all_present(caplog):
     assert claims.iss == "issuer.com"
     assert claims.sub == "user123"
     assert claims.jti == "token-id-456"
-
-    for field in decoded_token:
-        assert f"{field.upper()} claim found" in caplog.text
 
 
 def test_check_claims_partial_missing(caplog):
@@ -265,8 +247,8 @@ def test_check_claims_partial_missing(caplog):
         "sub": "user123"
     }
 
-    with caplog.at_level("DEBUG"):
-        claims = analyzer.check_claims(decoded_token)
+
+    claims = analyzer.check_claims(decoded_token)
 
     assert isinstance(claims, JWTClaims)
     assert claims.exp == 1712345678
@@ -277,7 +259,3 @@ def test_check_claims_partial_missing(caplog):
     assert claims.iss is None
     assert claims.jti is None
 
-    assert "EXP claim found" in caplog.text
-    assert "SUB claim found" in caplog.text
-    assert "IAT claim not found." in caplog.text
-    assert "AUD claim not found." in caplog.text

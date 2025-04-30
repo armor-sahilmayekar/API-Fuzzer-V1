@@ -3,6 +3,9 @@ import logging
 import os
 import sys
 
+from selenium.webdriver.remote.remote_connection import LOGGER as seleniumLogger
+from urllib3.connectionpool import log as urllibLogger
+
 
 class Loggable:
     """
@@ -27,14 +30,16 @@ class Loggable:
     """
 
     _initialized = False
+    log_level = logging.WARN
 
     @staticmethod
     def _init_logger():
         if not Loggable._initialized:
             # Get the log level from the environment variable, default to INFO if not set
             log_level = os.getenv("LOG_LEVEL", "INFO").upper()
-            log_level = getattr(logging, log_level, logging.INFO)
-
+            Loggable.log_level = getattr(logging, log_level, logging.INFO)
+            seleniumLogger.setLevel(Loggable.log_level)
+            urllibLogger.setLevel(Loggable.log_level)
             logging.basicConfig(
                 level=log_level,
                 format="%(asctime)s | %(name)s | %(levelname)s | %(message)s",
@@ -49,6 +54,9 @@ class Loggable:
         If not called within a class, defaults to 'AppLogger'.
         """
         Loggable._init_logger()
+        for logger in [logging.getLogger(name) for name in logging.root.manager.loggerDict]:
+            logger.setLevel(Loggable.log_level)
+
         # Get the calling class name dynamically
         frame = inspect.stack()[2]
         calling_class = frame[0].f_locals.get('self', None)
@@ -56,6 +64,7 @@ class Loggable:
             class_name = calling_class.__class__.__name__
         else:
             class_name = "AppLogger"  # Default if not in a class context
+
         return logging.getLogger(class_name)
 
     @staticmethod

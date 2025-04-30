@@ -85,7 +85,6 @@ celerybeat-schedule
 *.sage.py
 
 # dotenv
-tools/api-fuzzer/.env
 .env
 
 # virtualenv

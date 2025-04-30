@@ -3,7 +3,8 @@ import os
 import urllib.parse
 from io import BytesIO
 from time import time, perf_counter
-
+from datetime import datetime
+import os
 import pycurl
 from bitstring import Bits
 from junit_xml import TestSuite, TestCase, to_xml_report_file
@@ -17,25 +18,37 @@ from modules.export.report import TestReport
 class Return:
     pass
 
-
+timestamp_dir =""
 class FuzzerTarget(FuzzerTargetBase, ServerTarget):
     def not_implemented(self, func_name):
         _ = func_name
         pass
 
     def __init__(self, name="target", base_url=None, report_dir="reports", auth_headers=None, junit_report_path="reports"):
-        super(ServerTarget, self).__init__(name)  # pylint: disable=E1003
-        super(FuzzerTargetBase, self).__init__(auth_headers)  # pylint: disable=E1003
-        self.logger = get_logger(self.__class__.__name__)
-        self.base_url = base_url
-        self.accepted_status_codes = list(range(200, 300)) + list(range(400, 500))
-        self.auth_headers = auth_headers
-        self.report_dir = report_dir
-        self.junit_report_path = junit_report_path
-        self.failed_test = list()
-        self.logger.info("Logger initialized")
-        self.resp_headers = dict()
-        self.transmit_start_test = None
+
+            super(ServerTarget, self).__init__(name)
+            super(FuzzerTargetBase, self).__init__(auth_headers)
+            self.logger = get_logger(self.__class__.__name__)
+            self.base_url = base_url
+            self.accepted_status_codes = list(range(200, 300)) + list(range(400, 500))
+            self.auth_headers = auth_headers
+
+            timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            global timestamp_dir
+            self.timestamp_dir = os.path.join(report_dir, timestamp)
+
+            self.passed_dir = os.path.join(self.timestamp_dir, "Passed")
+            self.error_dir = os.path.join(self.timestamp_dir, "Failed")
+
+            os.makedirs(self.passed_dir, exist_ok=True)
+            os.makedirs(self.error_dir, exist_ok=True)
+
+            self.report_dir = self.timestamp_dir  # update to point to the timestamp dir
+            self.junit_report_path = os.path.join(self.timestamp_dir, "junit_report.xml")
+            self.failed_test = list()
+            self.logger.info("Logger initialized")
+            self.resp_headers = dict()
+            self.transmit_start_test = None
 
     def pre_test(self, test_num):
         """
@@ -202,6 +215,7 @@ class FuzzerTarget(FuzzerTargetBase, ServerTarget):
             self.report.add("request_body", _return.request.body)
             self.report.add("response", _return.content.decode())
             status_code = _return.status_code
+            print(status_code, "status code from fuzzer")
             self.report.add("response_code",  status_code)
             if not status_code:
                 self.logger.warning(f"Failed to parse http response code, continue...")
@@ -246,17 +260,50 @@ class FuzzerTarget(FuzzerTargetBase, ServerTarget):
             self.failed_test.append(test_case)
             self.save_report_to_disc()
 
+    # def save_report_to_disc(self):
+    #     self.logger.info("Report: {}".format(self.report.to_dict()))
+    #     try:
+    #         status_code = self.report.get("response_code")
+    #         if status_code == 200:
+    #             target_dir = self.passed_dir
+    #         else:
+    #             target_dir = self.error_dir
+    #
+    #         file_name = f"{self.report.get('name')}.json"
+    #         file_path = os.path.join(target_dir, file_name)
+    #
+    #         with open(file_path, "w") as f:
+    #             json.dump(self.report.to_dict(), f, indent=2)
+    #
+    #         self.logger.info(f"Saved report to {file_path}")
+    #     except Exception as e:
+    #         self.logger.error(f'Failed to save report to folder: {e}')
+
     def save_report_to_disc(self):
         self.logger.info("Report: {}".format(self.report.to_dict()))
         try:
-            self.logger.info(f'Report Dir: {self.report_dir}')
-            t = TestReport(self.report.get("name"), self.report_dir)
-            data = self.report.to_dict()
+            status_code = self.report.get("response_code")
+            if status_code is None:
+                self.logger.warning("No response code in report; skipping file save.")
+                return
 
-            new = t.from_dict(data)
-            new.save()
+            # Determine if status code is accepted
+            if status_code in self.accepted_status_codes:
+                target_dir = os.path.join(self.passed_dir, str(status_code))
+            else:
+                target_dir = os.path.join(self.error_dir, str(status_code))
+
+            os.makedirs(target_dir, exist_ok=True)
+
+            file_name = f"{self.report.get('name')}.json"
+            file_path = os.path.join(target_dir, file_name)
+
+            with open(file_path, "w") as f:
+                json.dump(self.report.to_dict(), f, indent=2)
+
+            self.logger.info(f"Saved report to {file_path}")
         except Exception as e:
-            self.logger.error(f'Failed to save export "{self.report.to_dict()}" to {self.report_dir} because: {e}')
+            self.logger.error(f'Failed to save report to folder: {e}')
 
     def report_add_basic_msg(self, msg):
         self.report.set_status(Report.FAILED)
