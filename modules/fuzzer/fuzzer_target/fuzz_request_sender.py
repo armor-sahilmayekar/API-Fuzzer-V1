@@ -18,7 +18,7 @@ from modules.export.report import TestReport
 class Return:
     pass
 
-
+timestamp_dir =""
 class FuzzerTarget(FuzzerTargetBase, ServerTarget):
     def not_implemented(self, func_name):
         _ = func_name
@@ -33,10 +33,12 @@ class FuzzerTarget(FuzzerTargetBase, ServerTarget):
             self.accepted_status_codes = list(range(200, 300)) + list(range(400, 500))
             self.auth_headers = auth_headers
 
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            global timestamp_dir
             self.timestamp_dir = os.path.join(report_dir, timestamp)
-            self.passed_dir = os.path.join(self.timestamp_dir, "passed")
-            self.error_dir = os.path.join(self.timestamp_dir, "error")
+
+            self.passed_dir = os.path.join(self.timestamp_dir, "Passed")
+            self.error_dir = os.path.join(self.timestamp_dir, "Failed")
 
             os.makedirs(self.passed_dir, exist_ok=True)
             os.makedirs(self.error_dir, exist_ok=True)
@@ -258,14 +260,40 @@ class FuzzerTarget(FuzzerTargetBase, ServerTarget):
             self.failed_test.append(test_case)
             self.save_report_to_disc()
 
+    # def save_report_to_disc(self):
+    #     self.logger.info("Report: {}".format(self.report.to_dict()))
+    #     try:
+    #         status_code = self.report.get("response_code")
+    #         if status_code == 200:
+    #             target_dir = self.passed_dir
+    #         else:
+    #             target_dir = self.error_dir
+    #
+    #         file_name = f"{self.report.get('name')}.json"
+    #         file_path = os.path.join(target_dir, file_name)
+    #
+    #         with open(file_path, "w") as f:
+    #             json.dump(self.report.to_dict(), f, indent=2)
+    #
+    #         self.logger.info(f"Saved report to {file_path}")
+    #     except Exception as e:
+    #         self.logger.error(f'Failed to save report to folder: {e}')
+
     def save_report_to_disc(self):
         self.logger.info("Report: {}".format(self.report.to_dict()))
         try:
             status_code = self.report.get("response_code")
-            if status_code == 200:
-                target_dir = self.passed_dir
+            if status_code is None:
+                self.logger.warning("No response code in report; skipping file save.")
+                return
+
+            # Determine if status code is accepted
+            if status_code in self.accepted_status_codes:
+                target_dir = os.path.join(self.passed_dir, str(status_code))
             else:
-                target_dir = self.error_dir
+                target_dir = os.path.join(self.error_dir, str(status_code))
+
+            os.makedirs(target_dir, exist_ok=True)
 
             file_name = f"{self.report.get('name')}.json"
             file_path = os.path.join(target_dir, file_name)

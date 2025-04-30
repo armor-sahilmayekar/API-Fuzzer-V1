@@ -1,3 +1,6 @@
+import json
+import os
+
 from kitty.interfaces import WebInterface
 
 from modules.fuzzer.fuzz_model import APIFuzzerModel
