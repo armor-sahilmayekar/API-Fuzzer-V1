@@ -5,25 +5,24 @@ import re
 from modules.util.loggable import Loggable as log
 
 
-class DoesNotMatchTestCase(TestCase):
+class FieldDoesNotMatchTestCase(TestCase):
     """Test case that checks if a field does not match a given regex pattern."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
     def evaluate_results(self) -> bool:
-        # Check status code match
-        status_code_match = self.response and self.response.status_code == self.expected.status_code
-
+        if not self.response:
+            return False
         # Check does_not_match for operators
         does_not_match_check_result = True
-        for operator in self.expected.expected:
-            if operator["type"] == "does_not_match":
-                field = operator.get("field")
-                expected_pattern = operator.get("expected")
+        for operator in self.expected:
+            status_code_match = self.response and self.response.status_code == operator.status_code
+            if operator.expected_type == "does_not_match":
+                expected_pattern = operator.expected
 
                 # Get the actual value from the response field
-                actual_value = self.get_response_field(field)
+                actual_value = self.get_response_field(operator.field)
 
                 # Check if the value matches the regex; it should NOT match
                 if self.match_regex(actual_value, expected_pattern):
@@ -33,11 +32,7 @@ class DoesNotMatchTestCase(TestCase):
         return status_code_match and does_not_match_check_result
 
     def get_response_field(self, field):
-        # Method to extract specific field from the response body.
-        # Adjust logic based on how the response is structured.
-        if field == "response_field":
-            return self.response.json().get("response_field")  # Modify as per actual structure
-        return None
+        return self.response.json().get(field, None)  # Modify as per actual structure
 
     def match_regex(self, value: str, pattern: str) -> bool:
         # Compile and match the regex pattern against the value

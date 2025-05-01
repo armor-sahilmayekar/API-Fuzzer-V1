@@ -1,6 +1,6 @@
 import argparse
 
-from modules.case.framework import TestCaseRunner
+from modules.case.runner import TestCaseRunner
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run vulnerability tests from JSON files.")

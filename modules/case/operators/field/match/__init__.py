@@ -139,15 +139,15 @@ class InstanceOfTypeTestCase(TestCase):
         # Check instance type match for operators
         instance_type_check_result = True
         for operator in self.expected.expected:
-            if operator["type"] == "instance_of_type":
-                field = operator.get("field")
-                expected_type = operator.get("expected")
+            if operator.expected_type == "instance_of_type":
+                field = operator.field
+                expected_type = operator.expected
 
                 # Get the actual value from the response field
-                actual_value = self.get_response_field(field)
+                actual_value = self.get_response_field(operator.field)
 
                 # Check if actual_value is an instance of the expected_type
-                if not isinstance(actual_value, expected_type):
+                if not isinstance(actual_value, operator.expected):
                     instance_type_check_result = False
                     break
 
@@ -157,5 +157,5 @@ class InstanceOfTypeTestCase(TestCase):
         # Method to extract specific field from the response body.
         # Adjust logic based on how the response is structured.
         if field == "response_field":
-            return self.response.json().get("response_field")  # Modify as per actual structure
+            return self.response.json().get(field)  # Modify as per actual structure
         return None
