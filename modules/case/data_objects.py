@@ -1,8 +1,37 @@
-
-from typing import Dict, List
+from typing import Dict, Union, List
 
 from modules.case.operators import *
 from modules.util.loggable import Loggable as log
+
+
+@dataclass
+@dataclass
+class Operator:
+    """
+    Data class to represent a single operator block in the test case.
+    Supports different types of test operators (e.g., payload match, regex negation).
+    """
+    type: str  # e.g., "payload", "does_not_match"
+    field: str  # e.g., "all", or specific field name
+    expected: Union[str, Dict[str, Any]]  # Can be a string pattern or full expected structure
+
+    @staticmethod
+    def from_dict(data: Dict[str, Any]) -> "Operator":
+        if not isinstance(data, dict):
+            raise ValueError("Operator data must be a dictionary")
+
+        required_keys = {"type", "field", "expected"}
+        missing = required_keys - data.keys()
+        if missing:
+            raise ValueError(f"Miss"
+                             f"ng required keys in operator data: {missing}")
+
+        return Operator(
+            type=data["type"],
+            field=data["field"],
+            expected=data["expected"]
+        )
+
 
 
 class HTTPMethod:
@@ -99,9 +128,19 @@ class Expected:
     Data structure to hold the expected test results.
     """
 
-    def __init__(self, status_code: int, operators: Dict[str, Any]):
+    def __init__(self, status_code: int, operator: Operator):
         self._status_code = status_code
-        self._operators = operators
+        self._expected = operator.expected
+        self._type = operator.type
+        self._field = operator.field
+
+    @property
+    def field(self) -> str:
+        return self._field
+
+    @property
+    def expected_type(self) -> str:
+        return self._type
 
     @property
     def status_code(self) -> int:
@@ -114,28 +153,27 @@ class Expected:
         self._status_code = value
 
     @property
-    def operators(self) -> Dict[str, Any]:
-        return self._operators
+    def expected(self) -> Union[str, Dict[str, Any]]:
+        return self._expected
 
-    @operators.setter
-    def operators(self, value: Dict[str, Any]) -> None:
-        if not isinstance(value, dict):
-            raise ValueError("operators must be a dictionary")
-        self._operators = value
+    @expected.setter
+    def expected(self, value: Union[str, Dict[str, Any]]) -> None:
+        self._expected = value
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> "Expected":
         log.debug(f"Creating Expected object from dictionary {data}")
         status_code = data.get("status_code")
-        operators = data.get("operators", {})
+        operators = Operator._from_dict(data.get("operators", {}))
         if not isinstance(operators, dict):
             raise AttributeError(f"Operators is not a dictionary. Received {operators}")
 
         # Create and return an Expected object
         return Expected(
             status_code=status_code,
-            operators=operators
+            expected=operators
         )
+
 
 @dataclass
 class TestCaseData:
@@ -205,6 +243,6 @@ class TestCaseData:
             "parameter": self.parameter,
             "expected": {
                 "status_code": self.expected.status_code,
-                "operators": self.expected.operators
+                "operators": self.expected.expected
             }
         }

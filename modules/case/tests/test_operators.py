@@ -69,7 +69,7 @@ def test_expected_from_dict():
     expected = Expected.from_dict(data)
 
     assert expected.status_code == 200
-    assert expected.operators == {"expected": "ok"}
+    assert expected.expected == {"expected": "ok"}
 
 
 def test_test_case_data_from_dict():
