@@ -77,6 +77,19 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--version',
                         action='version',
                         version=get_version())
+    parser.add_argument('--status_code',
+                        dest='status_code',
+                        type=int,
+                        required=False,
+                        help='HTTP status code to filter by')
+
+    # args = parser.parse_args('--folder',dest='folder')
+    parser.add_argument('--folder',
+                               dest='folder',
+                               type=str,
+                               required=False,
+                               help='Path to a specific folder to run tests from')
+
     args = parser.parse_args()
     if args.src_file is None and args.src_url is None:
         argparse.ArgumentTypeError('No API definition source provided -s, --src_file or --src_url should be defined')
@@ -117,6 +130,7 @@ if __name__ == '__main__':
               f' Feel free to export the issue',)
         exit(1)
     signal.signal(signal.SIGINT, signal_handler)
-    prog.run()
-
+    # prog.run()
+    if args.status_code is not None and args.folder is not None:
+        prog.run(status_code=args.status_code, folder=args.folder)
 
