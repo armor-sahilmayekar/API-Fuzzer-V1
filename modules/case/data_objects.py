@@ -1,10 +1,9 @@
-from typing import Dict, Union, List
-
-from modules.case.operators import *
+from dataclasses import dataclass, field
+from typing import Dict, Union, List, Any
 from modules.util.loggable import Loggable as log
 
 
-@dataclass
+
 @dataclass
 class Operator:
     """
@@ -31,7 +30,6 @@ class Operator:
             field=data["field"],
             expected=data["expected"]
         )
-
 
 
 class HTTPMethod:
@@ -222,8 +220,16 @@ class TestCaseData:
             headers=data.get("headers", {}),
             body=data.get("body", {}),
             parameter=data.get("parameter", ""),
-            expected=Expected.from_dict(data.get("expected", {}))
+            expected=TestCaseData._operators(data.get("expected"))
         )
+
+    @staticmethod
+    def _operators(data) -> list[Expected]:
+        l = []
+        for item in data.get("operators", []):
+            item["status_code"] = data.get(item["status_code"], 200)
+            l.append(Expected.from_dict(item))
+        return l
 
     def to_dict(self) -> Dict[str, Any]:
         """

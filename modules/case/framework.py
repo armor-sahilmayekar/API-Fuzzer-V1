@@ -3,7 +3,11 @@ import os
 import re
 from typing import Dict, List
 
+from modules.case.data_objects import Operator
 from modules.case.operators import *
+from modules.case.operators.field.fuzzymatch import FuzzyMatchTestCase
+from modules.case.operators.field.match import MatchTestCase, ExactMatchTestCase, FieldMatchTestCase
+from modules.case.operators.payload import ExactPayloadMatchTestCase
 from modules.util.loggable import Loggable as log
 
 
@@ -65,6 +69,17 @@ class FieldSetMatchTestCaseFactory(TestCaseFactory):
         log.debug(f"Creating Test Case with {data}")
         return self.test_case_cls(**TestCase.parse_data(data).to_dict())
 
+class ExactPayloadMatchTestCaseFactory(TestCaseFactory):
+    """Factory for FieldSetMatchTestCase."""
+
+    def create(self, data: Dict[str, Any]) -> TestCase:
+        log.debug(f"Creating Test Case with {data}")
+        return self.test_case_cls(**TestCase.parse_data(data).to_dict())
+
+
+class FieldSetMatchTestCase:
+    pass
+
 
 class TestCaseBuilder:
     """
@@ -77,6 +92,7 @@ class TestCaseBuilder:
         "fuzzy_match": FuzzyMatchTestCaseFactory(FuzzyMatchTestCase),
         "field_match": FieldMatchTestCaseFactory(FieldMatchTestCase),
         "field_set_match": FieldSetMatchTestCaseFactory(FieldSetMatchTestCase),
+        "payload": ExactPayloadMatchTestCaseFactory(ExactPayloadMatchTestCase),
     }
 
     @staticmethod
@@ -130,7 +146,7 @@ class TestCaseBuilder:
             raise ValueError("Input data must be a dictionary or a list of dictionaries.")
 
     @staticmethod
-    def _build_single(data: Dict[str, Any]) -> TestCase:
+    def _build_single(data: Dict[str, Any]) -> [TestCase]:
         """
         Helper method to build a single test case from a dictionary.
 
@@ -140,15 +156,14 @@ class TestCaseBuilder:
         Returns:
             TestCase: An instance of the appropriate TestCase subclass.
         """
-        match_type = (
-            data.get("expected", {})
-            .get("operators", {})
-            .get("type", "match")
-            .lower()
-        )
-        factory = TestCaseBuilder._factory_registry.get(match_type)
-        if not factory:
-            raise ValueError(f"Unsupported match type: {match_type}")
-        return factory.create(data)
+        t = []
+        for item in data.get("expected", {}).get("operators", []):
+            match_type = item.get("type")
+            tc = TestCaseBuilder._factory_registry.get(match_type)
+            tc.create(data)
+            if not tc:
+                raise ValueError(f"Unsupported match type: {match_type}")
+            t.append(tc)
+            return t
 
 

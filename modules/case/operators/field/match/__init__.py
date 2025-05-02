@@ -1,4 +1,4 @@
-from modules.case.operators.base import TestCase
+from modules.case.operators import TestCase
 import re
 
 

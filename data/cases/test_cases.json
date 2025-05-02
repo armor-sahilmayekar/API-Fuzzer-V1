@@ -14,10 +14,10 @@
     "parameter": "?sort=1",
     "expected": {
       "status_code": 200,
-      "operators": {
+      "operators": [{
         "type" : "match",
         "expected": "somevalue"
-      }
+      }]
 
     }
   },

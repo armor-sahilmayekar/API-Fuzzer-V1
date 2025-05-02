@@ -27,19 +27,23 @@ class TestCaseRunner:
         Returns:
             List[Dict]: List of test case data dictionaries.
         """
-        test_cases = []
-        for filename in os.listdir(directory):
-            if filename.endswith(".json"):
-                path = os.path.join(directory, filename)
-                with open(path, "r", encoding="utf-8") as file:
-                    raw_content = file.read()
-                    try:
-                        # Directly load JSON without stripping comments
-                        data = json.loads(raw_content)
-                        test_cases.append(data)
-                    except json.JSONDecodeError as e:
-                        print(f"[ERROR] Failed to parse {filename}: {e}")
-        return test_cases
+        try:
+            test_cases = []
+            for filename in os.listdir(directory):
+                if filename.endswith(".json"):
+                    path = os.path.join(directory, filename)
+                    with open(path, "r", encoding="utf-8") as file:
+                        raw_content = file.read()
+                        try:
+                            # Directly load JSON without stripping comments
+                            data = json.loads(raw_content)
+                            test_cases.append(data)
+                        except json.JSONDecodeError as e:
+                            print(f"[ERROR] Failed to parse {filename}: {e}")
+            return test_cases
+        except FileNotFoundError as e:
+            log.error(f"Path to test case directory invalid: {directory}")
+            exit(1)
 
     def run(self):
         """
