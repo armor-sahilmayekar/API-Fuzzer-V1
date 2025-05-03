@@ -1,4 +1,5 @@
 from modules.case.operators import TestCase
+from modules.util.loggable import Loggable as log
 import re
 
 
@@ -83,20 +84,22 @@ class MatchTestCase(TestCase):
     def evaluate_results(self) -> bool:
         # Check status code match
         status_code_match = self.response and self.response.status_code == self.expected.status_code
-
+        try:
         # Check regex match for operators
-        regex_match_result = True
-        for operator in self.expected.expected:
-            if operator["type"] == "exact_match_regex":
-                field = operator.get("field")
-                expected_pattern = operator.get("expected")
+            regex_match_result = True
+            for operator in self.expected:
+                if operator["type"] == "exact_match_regex":
+                    field = operator.get("field")
+                    expected_pattern = operator.get("expected")
 
-                # Get the actual value from the response field
-                actual_value = self.get_response_field(field)
+                    # Get the actual value from the response field
+                    actual_value = self.get_response_field(field)
 
-                if not self.match_regex(actual_value, expected_pattern):
-                    regex_match_result = False
-                    break
+                    if not self.match_regex(actual_value, expected_pattern):
+                        regex_match_result = False
+                        break
+        except Exception as e:
+            log.error(e)
 
         return status_code_match and regex_match_result
 
@@ -138,19 +141,22 @@ class InstanceOfTypeTestCase(TestCase):
 
         # Check instance type match for operators
         instance_type_check_result = True
-        for operator in self.expected.expected:
-            if operator.expected_type == "instance_of_type":
-                field = operator.field
-                expected_type = operator.expected
+        try:
+            for operator in self.expected:
+                if operator.expected_type == "instance_of_type":
+                    field = operator.field
+                    expected_type = operator.expected
 
-                # Get the actual value from the response field
-                actual_value = self.get_response_field(operator.field)
+                    # Get the actual value from the response field
+                    actual_value = self.get_response_field(operator.field)
 
-                # Check if actual_value is an instance of the expected_type
-                if not isinstance(actual_value, operator.expected):
-                    instance_type_check_result = False
-                    break
-
+                    # Check if actual_value is an instance of the expected_type
+                    if not isinstance(actual_value, operator.expected):
+                        instance_type_check_result = False
+                        break
+        except Exception as e:
+            log.error(e)
+            return False
         return status_code_match and instance_type_check_result
 
     def get_response_field(self, field):

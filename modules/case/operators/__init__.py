@@ -159,7 +159,7 @@ class TestCase(ABC):
     def save_report(self):
         """Create and persist a structured test report."""
         log.info(f"[{self.test_number}] Saving report for test '{self.name}'")
-        report = TestReport(name=self.name)
+        report = TestReport(name=self._name)
         report.add("test_number", self.test_number)
         report.add("state", "COMPLETED")
         report.add("request_url", self.url + self.parameter)

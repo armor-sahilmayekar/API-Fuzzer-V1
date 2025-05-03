@@ -62,10 +62,18 @@ class TestCaseRunner:
                 try:
                     test_cases = TestCaseBuilder.build(test)
                     for test_case in test_cases:
-                        print(f"[INFO] Running test: {test_case.name} ({test_case.method} {test_case.url})")
-                        test_case.execute()
-                        test_case.save_report()
-                        print(f"[✓] Report saved for {test_case.name}\n")
+                        if isinstance(test_case, list):
+                            for t in test_case:
+
+                                b = t.instance()
+                                log.info(f"Running test: {b.name} ({b.method} {b.url})")
+                                b.execute()
+                                b.save_report()
+                        else:
+                            log.info(f"Running test: {test_case.name} ({test_case.method} {test_case.url})")
+                            test_case.execute()
+                            test_case.save_report()
+                        log.info(f"[✓] Report saved for {test_case.name}\n")
                 except Exception as ex:
                     name = test.get("name", "UNKNOWN") if isinstance(test, dict) else "UNKNOWN"
-                    print(f"[ERROR] Failed to run test {name}: {ex}")
+                    log.error(f"Failed to run test {name}: {ex}")

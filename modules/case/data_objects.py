@@ -22,15 +22,17 @@ class Operator:
         required_keys = {"type", "field", "expected"}
         missing = required_keys - data.keys()
         if missing:
-            raise ValueError(f"Miss"
-                             f"ng required keys in operator data: {missing}")
+            log.error(f"Missing required keys in operator data: {missing}")
+
 
         return Operator(
-            type=data["type"],
-            field=data["field"],
-            expected=data["expected"]
+            type=data.get("type") if data.get("type").lower() != "none" or data.get("type") is not None else None,
+            field=data.get("field") if data.get("field").lower() != "none".lower() or data.get("field", None) is not None else None,
+            expected=data.get("expected") if data.get("expected").lower() != "none" else None
         )
 
+    def to_dict(self) -> Dict[str, Any]:
+        return {"type": self.type, "field": self.field, "expected": self}
 
 class HTTPMethod:
     """
@@ -162,15 +164,29 @@ class Expected:
     def from_dict(data: Dict[str, Any]) -> "Expected":
         log.debug(f"Creating Expected object from dictionary {data}")
         status_code = data.get("status_code")
-        operators = Operator._from_dict(data.get("operators", {}))
-        if not isinstance(operators, dict):
+        if data.get("operators"):
+            operators = Operator.from_dict(data.get("operators").pop())
+        else:
+            operators = Operator.from_dict(data)
+        if not isinstance(operators, Operator):
             raise AttributeError(f"Operators is not a dictionary. Received {operators}")
 
         # Create and return an Expected object
         return Expected(
             status_code=status_code,
-            expected=operators
+            operator=operators
         )
+
+    def to_dict(self) -> dict:
+        log.debug(f"Creating dictionary object from Expected {self}")
+        return {
+            "status_code": self._status_code,
+            "operators":{
+                "type": self._type,
+                "field": self._field,
+                "expected": self._expected
+            }
+        }
 
 
 @dataclass
@@ -197,7 +213,7 @@ class TestCaseData:
     headers: Dict[str, str] = field(default_factory=dict)
     body: Any = field(default_factory=dict)
     parameter: str = ""
-    expected: Expected = field(default_factory=Expected)
+    expected: list[Expected] = field(default_factory=list)
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> "TestCaseData":
@@ -227,7 +243,7 @@ class TestCaseData:
     def _operators(data) -> list[Expected]:
         l = []
         for item in data.get("operators", []):
-            item["status_code"] = data.get(item["status_code"], 200)
+            item["status_code"] = data.get("status_code", 200)
             l.append(Expected.from_dict(item))
         return l
 
@@ -238,7 +254,10 @@ class TestCaseData:
         Returns:
             Dict[str, Any]: Dictionary with all attributes of TestCaseData.
         """
-        return {
+        e = []
+        for i in self.expected:
+            e.append(i.to_dict().get("operators"))
+        d = {
             "test_number": self.test_number,
             "name": self.name,
             "jira_description": self.jira_description,
@@ -248,7 +267,8 @@ class TestCaseData:
             "body": self.body,
             "parameter": self.parameter,
             "expected": {
-                "status_code": self.expected.status_code,
-                "operators": self.expected.expected
+                "status_code": self.expected.pop().status_code,
+                "operators": e
             }
         }
+        return d

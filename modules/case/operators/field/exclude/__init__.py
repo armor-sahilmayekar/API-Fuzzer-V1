@@ -16,19 +16,23 @@ class FieldDoesNotMatchTestCase(TestCase):
             return False
         # Check does_not_match for operators
         does_not_match_check_result = True
-        for operator in self.expected:
-            status_code_match = self.response and self.response.status_code == operator.status_code
-            if operator.expected_type == "does_not_match":
-                expected_pattern = operator.expected
+        try:
 
-                # Get the actual value from the response field
-                actual_value = self.get_response_field(operator.field)
+            for operator in self.expected:
+                status_code_match = self.response and self.response.status_code == operator.status_code
+                if operator.expected_type == "does_not_match":
+                    expected_pattern = operator.expected
 
-                # Check if the value matches the regex; it should NOT match
-                if self.match_regex(actual_value, expected_pattern):
-                    does_not_match_check_result = False
-                    break
+                    # Get the actual value from the response field
+                    actual_value = self.get_response_field(operator.field)
 
+                    # Check if the value matches the regex; it should NOT match
+                    if self.match_regex(actual_value, expected_pattern):
+                        does_not_match_check_result = False
+                        break
+        except Exception as e:
+            log.error(e)
+            return False
         return status_code_match and does_not_match_check_result
 
     def get_response_field(self, field):

@@ -1,5 +1,5 @@
 from modules.case.operators import TestCase
-
+from modules.util.loggable import Loggable as  log
 import json
 
 class FuzzyMatchTestCase(TestCase):
@@ -38,7 +38,7 @@ class FuzzyMatchTestCase(TestCase):
                 response_json = self.response.json()
 
                 # Iterate over all operators in the "operators" array
-                for operator in self.expected.expected:
+                for operator in self.expected:
                     if operator.get("type") == "match":
                         expected_words = operator.get("expected", "").split()
 
@@ -48,6 +48,9 @@ class FuzzyMatchTestCase(TestCase):
                                 return True
             except ValueError:
                 # If the response is not valid JSON, return False
+                return False
+            except Exception as e:
+                log.error(e)
                 return False
         return False
 

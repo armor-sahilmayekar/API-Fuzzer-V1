@@ -27,14 +27,17 @@ class TestCaseFactory(ABC):
     def create(self, data: Dict[str, Any]) -> TestCase:
         pass
 
+    def instance(self) -> type:
+        return self.test_case_cls
+
 
 class MatchTestCaseFactory(TestCaseFactory):
     """Factory for MatchTestCase."""
 
     def create(self, data: Dict[str, Any]) -> TestCase:
         log.debug(f"Creating Test Case with {data}")
-        return self.test_case_cls(**TestCase.parse_data(data).to_dict())
-
+        self.test_case_cls = MatchTestCase(**TestCase.parse_data(data).to_dict())
+        return self.test_case_cls
 
 
 
@@ -43,7 +46,9 @@ class ExactMatchTestCaseFactory(TestCaseFactory):
 
     def create(self, data: Dict[str, Any]) -> TestCase:
         log.debug(f"Creating Test Case with {data}")
-        return self.test_case_cls(**TestCase.parse_data(data).to_dict())
+        self.test_case_cls = ExactMatchTestCase(**TestCase.parse_data(data).to_dict())
+        return self.test_case_cls
+
 
 
 class FuzzyMatchTestCaseFactory(TestCaseFactory):
@@ -51,7 +56,8 @@ class FuzzyMatchTestCaseFactory(TestCaseFactory):
 
     def create(self, data: Dict[str, Any]) -> TestCase:
         log.debug(f"Creating Test Case with {data}")
-        return self.test_case_cls(**TestCase.parse_data(data).to_dict())
+        self.test_case_cls = FuzzyMatchTestCase(**TestCase.parse_data(data).to_dict())
+        return self.test_case_cls
 
 
 class FieldMatchTestCaseFactory(TestCaseFactory):
@@ -59,7 +65,8 @@ class FieldMatchTestCaseFactory(TestCaseFactory):
 
     def create(self, data: Dict[str, Any]) -> TestCase:
         log.debug(f"Creating Test Case with {data}")
-        return self.test_case_cls(**TestCase.parse_data(data).to_dict())
+        self.test_case_cls = FieldMatchTestCase(**TestCase.parse_data(data).to_dict())
+        return self.test_case_cls
 
 
 class FieldSetMatchTestCaseFactory(TestCaseFactory):
@@ -67,14 +74,16 @@ class FieldSetMatchTestCaseFactory(TestCaseFactory):
 
     def create(self, data: Dict[str, Any]) -> TestCase:
         log.debug(f"Creating Test Case with {data}")
-        return self.test_case_cls(**TestCase.parse_data(data).to_dict())
+        self.test_case_cls = FieldSetMatchTestCase(**TestCase.parse_data(data).to_dict())
+        return self.test_case_cls
 
 class ExactPayloadMatchTestCaseFactory(TestCaseFactory):
     """Factory for FieldSetMatchTestCase."""
 
     def create(self, data: Dict[str, Any]) -> TestCase:
         log.debug(f"Creating Test Case with {data}")
-        return self.test_case_cls(**TestCase.parse_data(data).to_dict())
+        self.test_case_cls = ExactPayloadMatchTestCase(**TestCase.parse_data(data).to_dict())
+        return self.test_case_cls
 
 
 class FieldSetMatchTestCase:
