@@ -1,3 +1,4 @@
+import ast
 from dataclasses import dataclass, field
 from typing import Dict, Union, List, Any
 from modules.util.loggable import Loggable as log
@@ -233,11 +234,18 @@ class TestCaseData:
             jira_description=data.get("jira_description", ""),
             method=data.get("method", HTTPMethod.GET).upper(),
             url=data.get("url"),
-            headers=data.get("headers", {}),
+            headers=TestCaseData.parse_headers(data.get("headers", {})),
             body=data.get("body", {}),
             parameter=data.get("parameter", ""),
             expected=TestCaseData._operators(data.get("expected"))
         )
+
+    @staticmethod
+    def parse_headers(headers: dict|str) -> dict:
+        if isinstance(headers, dict):
+            return headers
+        elif isinstance(headers, str):
+            return ast.literal_eval(headers)
 
     @staticmethod
     def _operators(data) -> list[Expected]:
@@ -272,3 +280,4 @@ class TestCaseData:
             }
         }
         return d
+

@@ -72,22 +72,29 @@ class TestReport(ApifuzzerReport):
         Returns:
             str: The full path to the saved JSON report file.
         """
-        file_name = f"{test_number:03d}_{name}.json"
-        file_path = os.path.join(TestReport.OUTPUT_DIR, file_name)
-        clean_data = self._clean_auth()
-        if not os.path.exists(TestReport.OUTPUT_DIR):
-            try:
-                os.makedirs(TestReport.OUTPUT_DIR)
-            except OSError:
-                pass
-        with open(file_path, 'w', encoding='utf-8') as f:
-            json.dump(clean_data.to_dict(), f, indent=2, ensure_ascii=False)
+        try:
+            file_name = f"{test_number:03d}_{name}.json"
+            file_path = os.path.join(TestReport.OUTPUT_DIR, file_name)
+            clean_data = self._clean_auth()
+            if not os.path.exists(TestReport.OUTPUT_DIR):
+                try:
+                    os.makedirs(TestReport.OUTPUT_DIR)
+                except OSError:
+                    pass
+            with open(file_path, 'w', encoding='utf-8') as f:
+                json.dump(clean_data.to_dict(), f, indent=2, ensure_ascii=False)
+        except FileNotFoundError as fnf:
+            log.error(fnf)
+        except PermissionError as pm:
+            log.error(pm)
+        except Exception as ex:
+            log.error(ex)
         return file_path
 
     def _clean_auth(self) -> ApifuzzerReport:
         b = copy.deepcopy(self)
         check = b.get("request_headers")
-        if check != "":
+        if check is None:
             rh = ast.literal_eval(b.get("request_headers"))
             rh["authorization"] = "**********"
             b.add("request_headers", rh)

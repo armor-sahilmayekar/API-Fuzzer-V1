@@ -88,7 +88,7 @@ class MatchTestCase(TestCase):
         # Check regex match for operators
             regex_match_result = True
             for operator in self.expected:
-                if operator["type"] == "exact_match_regex":
+                if operator.expected_type == "exact_match_regex":
                     field = operator.get("field")
                     expected_pattern = operator.get("expected")
 
