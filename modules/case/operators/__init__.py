@@ -10,6 +10,9 @@ from urllib3.util import Retry
 from modules.export.report import TestReport
 from modules.case.data_objects import Expected, TestCaseData, HTTPMethod
 from modules.util.loggable import Loggable as log
+from dataclasses import dataclass
+from typing import Any, Union, Dict
+
 
 
 class TestCase(ABC):
@@ -28,7 +31,7 @@ class TestCase(ABC):
             headers: Dict[str, str],
             body: Any,
             parameter: str,
-            expected: Expected
+            expected: [Expected]
     ) -> object:
         self._test_number = test_number
         self._name = name
@@ -39,8 +42,10 @@ class TestCase(ABC):
         self._body = body
         self._parameter = parameter
         if isinstance(expected, dict):
-            self._expected = Expected.from_dict(expected)
+            self._expected = [Expected.from_dict(expected)]
         elif isinstance(expected, Expected):
+            self._expected = [expected]
+        elif all(isinstance(item, Expected) for item in expected):
             self._expected = expected
         else:
             raise ValueError(f"Expected {type(Expected)} but got {type(expected)}")
@@ -154,7 +159,7 @@ class TestCase(ABC):
     def save_report(self):
         """Create and persist a structured test report."""
         log.info(f"[{self.test_number}] Saving report for test '{self.name}'")
-        report = TestReport(name=self.name)
+        report = TestReport(name=self._name)
         report.add("test_number", self.test_number)
         report.add("state", "COMPLETED")
         report.add("request_url", self.url + self.parameter)
@@ -186,65 +191,3 @@ class TestCase(ABC):
         else:
             return self._session.request(method, url, headers=self.headers, data=self.body, timeout=timeout)
 
-
-class MatchTestCase(TestCase):
-    """Test case that checks status code match only."""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def evaluate_results(self) -> bool:
-        return bool(self.response and self.response.status_code == self.expected.status_code)
-
-
-class ExactMatchTestCase(TestCase):
-    """Test case that requires exact response body match."""
-
-    def evaluate_results(self) -> bool:
-        response_value = self.response.text.strip()
-        expected_response_value = self.expected.operators.get("expected", "").strip()
-        return bool(
-                self.response and
-                self.response.status_code == self.expected.status_code and
-                response_value == expected_response_value
-        )
-
-
-class FuzzyMatchTestCase(TestCase):
-    """Test case that checks if a substring exists in the response body."""
-
-    def evaluate_results(self) -> bool:
-        return (
-                self.response and
-                self.response.status_code == self.expected.status_code and
-                self.expected.operators.get("expected", "") in self.response.text
-        )
-
-
-class FieldMatchTestCase(TestCase):
-    """Test case that validates a specific field in a JSON response."""
-
-    def evaluate_results(self) -> bool:
-        if not self.response:
-            return False
-        try:
-            json_body = self.response.json()
-            field = self.expected.operators.get("field")
-            expected_value = self.expected.operators.get("expected")
-            return json_body.get(field) == expected_value
-        except Exception:
-            return False
-
-
-class FieldSetMatchTestCase(TestCase):
-    """Test case that matches a set of fields in a JSON response."""
-
-    def evaluate_results(self) -> bool:
-        if not self.response:
-            return False
-        try:
-            json_body = self.response.json()
-            fields = self.expected.operators.get("fields", {})
-            return all(json_body.get(k) == v for k, v in fields.items())
-        except Exception:
-            return False

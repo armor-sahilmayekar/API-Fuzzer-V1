@@ -8,38 +8,40 @@
     "headers": {
       "Host": "mdr-api.secure-dev.services",
       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
-      "Accept": "attacker.com"
+      "Accept": "application/json"
     },
     "body": {},
     "parameter": "?sort=1",
     "expected": {
       "status_code": 200,
-      "operators": {
+      "operators": [{
         "type" : "match",
-        "expected": "somevalue"
-      }
+        "expected": "somevalue",
+        "field": "status"
+      }]
 
     }
   },
     {
     "test_number": 1,
-    "name": "header_injection_Accept",
+    "name": "header_injection_Asasdfasdccept",
     "jira_description" : "",
     "method": "GET",
     "url": "https://mdr.api.secure-dev.services/metrics/incidents",
     "headers": {
       "Host": "mdr-api.secure-dev.services",
       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
-      "Accept": "attacker.com"
+      "Accept": "application/json"
     },
     "body": {},
     "parameter": "?sort=1",
     "expected": {
       "status_code": 200,
-      "operators": {
+      "operators": [{
         "type" : "fuzzy_match",
-        "expected": "Sahil"
-      }
+        "expected": "Sahil",
+        "field": "blaj"
+      }]
 
     }
   }

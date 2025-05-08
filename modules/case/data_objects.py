@@ -1,9 +1,39 @@
-
-from typing import Dict, List
-
-from modules.case.operators import *
+import ast
+from dataclasses import dataclass, field
+from typing import Dict, Union, List, Any
 from modules.util.loggable import Loggable as log
 
+
+
+@dataclass
+class Operator:
+    """
+    Data class to represent a single operator block in the test case.
+    Supports different types of test operators (e.g., payload match, regex negation).
+    """
+    type: str  # e.g., "payload", "does_not_match"
+    field: str  # e.g., "all", or specific field name
+    expected: Union[str, Dict[str, Any]]  # Can be a string pattern or full expected structure
+
+    @staticmethod
+    def from_dict(data: Dict[str, Any]) -> "Operator":
+        if not isinstance(data, dict):
+            raise ValueError("Operator data must be a dictionary")
+
+        required_keys = {"type", "field", "expected"}
+        missing = required_keys - data.keys()
+        if missing:
+            log.error(f"Missing required keys in operator data: {missing}")
+
+
+        return Operator(
+            type=data.get("type") if data.get("type").lower() != "none" or data.get("type") is not None else None,
+            field=data.get("field") if data.get("field").lower() != "none".lower() or data.get("field", None) is not None else None,
+            expected=data.get("expected") if data.get("expected").lower() != "none" else None
+        )
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {"type": self.type, "field": self.field, "expected": self}
 
 class HTTPMethod:
     """
@@ -99,9 +129,19 @@ class Expected:
     Data structure to hold the expected test results.
     """
 
-    def __init__(self, status_code: int, operators: Dict[str, Any]):
+    def __init__(self, status_code: int, operator: Operator):
         self._status_code = status_code
-        self._operators = operators
+        self._expected = operator.expected
+        self._type = operator.type
+        self._field = operator.field
+
+    @property
+    def field(self) -> str:
+        return self._field
+
+    @property
+    def expected_type(self) -> str:
+        return self._type
 
     @property
     def status_code(self) -> int:
@@ -114,28 +154,41 @@ class Expected:
         self._status_code = value
 
     @property
-    def operators(self) -> Dict[str, Any]:
-        return self._operators
+    def expected(self) -> Union[str, Dict[str, Any]]:
+        return self._expected
 
-    @operators.setter
-    def operators(self, value: Dict[str, Any]) -> None:
-        if not isinstance(value, dict):
-            raise ValueError("operators must be a dictionary")
-        self._operators = value
+    @expected.setter
+    def expected(self, value: Union[str, Dict[str, Any]]) -> None:
+        self._expected = value
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> "Expected":
         log.debug(f"Creating Expected object from dictionary {data}")
         status_code = data.get("status_code")
-        operators = data.get("operators", {})
-        if not isinstance(operators, dict):
+        if data.get("operators"):
+            operators = Operator.from_dict(data.get("operators").pop())
+        else:
+            operators = Operator.from_dict(data)
+        if not isinstance(operators, Operator):
             raise AttributeError(f"Operators is not a dictionary. Received {operators}")
 
         # Create and return an Expected object
         return Expected(
             status_code=status_code,
-            operators=operators
+            operator=operators
         )
+
+    def to_dict(self) -> dict:
+        log.debug(f"Creating dictionary object from Expected {self}")
+        return {
+            "status_code": self._status_code,
+            "operators":{
+                "type": self._type,
+                "field": self._field,
+                "expected": self._expected
+            }
+        }
+
 
 @dataclass
 class TestCaseData:
@@ -161,7 +214,7 @@ class TestCaseData:
     headers: Dict[str, str] = field(default_factory=dict)
     body: Any = field(default_factory=dict)
     parameter: str = ""
-    expected: Expected = field(default_factory=Expected)
+    expected: list[Expected] = field(default_factory=list)
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> "TestCaseData":
@@ -181,11 +234,26 @@ class TestCaseData:
             jira_description=data.get("jira_description", ""),
             method=data.get("method", HTTPMethod.GET).upper(),
             url=data.get("url"),
-            headers=data.get("headers", {}),
+            headers=TestCaseData.parse_headers(data.get("headers", {})),
             body=data.get("body", {}),
             parameter=data.get("parameter", ""),
-            expected=Expected.from_dict(data.get("expected", {}))
+            expected=TestCaseData._operators(data.get("expected"))
         )
+
+    @staticmethod
+    def parse_headers(headers: dict|str) -> dict:
+        if isinstance(headers, dict):
+            return headers
+        elif isinstance(headers, str):
+            return ast.literal_eval(headers)
+
+    @staticmethod
+    def _operators(data) -> list[Expected]:
+        l = []
+        for item in data.get("operators", []):
+            item["status_code"] = data.get("status_code", 200)
+            l.append(Expected.from_dict(item))
+        return l
 
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -194,7 +262,10 @@ class TestCaseData:
         Returns:
             Dict[str, Any]: Dictionary with all attributes of TestCaseData.
         """
-        return {
+        e = []
+        for i in self.expected:
+            e.append(i.to_dict().get("operators"))
+        d = {
             "test_number": self.test_number,
             "name": self.name,
             "jira_description": self.jira_description,
@@ -204,7 +275,9 @@ class TestCaseData:
             "body": self.body,
             "parameter": self.parameter,
             "expected": {
-                "status_code": self.expected.status_code,
-                "operators": self.expected.operators
+                "status_code": self.expected.pop().status_code,
+                "operators": e
             }
         }
+        return d
+

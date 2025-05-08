@@ -27,19 +27,23 @@ class TestCaseRunner:
         Returns:
             List[Dict]: List of test case data dictionaries.
         """
-        test_cases = []
-        for filename in os.listdir(directory):
-            if filename.endswith(".json"):
-                path = os.path.join(directory, filename)
-                with open(path, "r", encoding="utf-8") as file:
-                    raw_content = file.read()
-                    try:
-                        # Directly load JSON without stripping comments
-                        data = json.loads(raw_content)
-                        test_cases.append(data)
-                    except json.JSONDecodeError as e:
-                        print(f"[ERROR] Failed to parse {filename}: {e}")
-        return test_cases
+        try:
+            test_cases = []
+            for filename in os.listdir(directory):
+                if filename.endswith(".json"):
+                    path = os.path.join(directory, filename)
+                    with open(path, "r", encoding="utf-8") as file:
+                        raw_content = file.read()
+                        try:
+                            # Directly load JSON without stripping comments
+                            data = json.loads(raw_content)
+                            test_cases.append(data)
+                        except json.JSONDecodeError as e:
+                            print(f"[ERROR] Failed to parse {filename}: {e}")
+            return test_cases
+        except FileNotFoundError as e:
+            log.error(f"Path to test case directory invalid: {directory}")
+            exit(1)
 
     def run(self):
         """
@@ -58,10 +62,18 @@ class TestCaseRunner:
                 try:
                     test_cases = TestCaseBuilder.build(test)
                     for test_case in test_cases:
-                        print(f"[INFO] Running test: {test_case.name} ({test_case.method} {test_case.url})")
-                        test_case.execute()
-                        test_case.save_report()
-                        print(f"[✓] Report saved for {test_case.name}\n")
+                        if isinstance(test_case, list):
+                            for t in test_case:
+
+                                b = t.instance()
+                                log.info(f"Running test: {b.name} ({b.method} {b.url})")
+                                b.execute()
+                                b.save_report()
+                        else:
+                            log.info(f"Running test: {test_case.name} ({test_case.method} {test_case.url})")
+                            test_case.execute()
+                            test_case.save_report()
+                        log.info(f"[✓] Report saved for {test_case.name}\n")
                 except Exception as ex:
                     name = test.get("name", "UNKNOWN") if isinstance(test, dict) else "UNKNOWN"
-                    print(f"[ERROR] Failed to run test {name}: {ex}")
+                    log.error(f"Failed to run test {name}: {ex}")
