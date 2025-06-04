@@ -1,6 +1,10 @@
 import json
+import os
 from urllib.parse import urlparse
 
+import datetime
+
+import requests
 from json_ref_dict import materialize, RefDict
 
 from modules.fuzzer.base_template import BaseTemplate
@@ -351,3 +355,123 @@ class OpenAPITemplateGenerator(TemplateGenerator):
             )
             _base_url = alternate_url
         return _base_url
+
+
+class RetestAPITemplateGenerator(OpenAPITemplateGenerator):
+    def __init__(self, _report_dir, _status_code):
+        # If you want to support api_definition params, else remove these params
+        TemplateGenerator.__init__(self)
+        self._file_name = None
+        self.mismatched_dir = None
+        self.status_code = None
+        self._headers = None
+        self._url = None
+        self._method = None
+        self._report_dir = _report_dir
+        self._status_code = _status_code
+        self.logger = get_logger(self.__class__.__name__)
+        # you can add additional properties as needed
+        self.templates = set()
+        self._retest_output_dir = None
+        print("in retest Class - ",_report_dir,self._status_code)
+
+    def execute_retest(self, status_code=None):
+        self.logger.info(f"Preparing retest for directory: {self._report_dir} with status code: {status_code}")
+        # Implement your retest preparation logic here
+        # For example, load JSON files from self._report_dir, filter by status_code, etc.
+        # This method is custom for retest use case
+
+        try:
+            self.process_retest_api_resources()
+        except Exception as e:
+            self.logger.error(f"Exception: {e}", exc_info=True)
+            raise e
+    # You can override other methods or add new ones if needed
+
+    def process_retest_api_resources(self):
+        print("Processing retest API resources")
+        print("Report dir in process retest method:", self._report_dir)
+        try:
+            json_files = [
+                f for f in os.listdir(self._report_dir)
+                if os.path.isfile(os.path.join(self._report_dir, f)) and f.endswith('.json')
+            ]
+            self.logger.info(f"Found {len(json_files)} JSON files in {self._report_dir}")
+
+            for json_file in json_files:
+                json_path = os.path.join(self._report_dir, json_file)
+                with open(json_path, 'r') as f:
+                    data = json.load(f)
+
+                # Extract request info and save to instance variables
+                self._file_name = json_file
+                self._method = data.get('request_method', 'GET')
+                self._url = data.get('request_url', '')
+                self._headers = data.get('request_headers', {})
+
+                # Print for review
+                print(f"Request from {json_file}:")
+                print(f"Method: {self._method}")
+                print(f"URL: {self._url}")
+                print(f"Headers: {self._headers}")
+                print("-----")
+
+                # Run the request immediately (optional)
+                self.run_retest()
+
+        except Exception as e:
+            self.logger.error(f"Error during retest preparation: {e}", exc_info=True)
+            raise e
+
+    def run_retest(self):
+        print("[RETEST] Starting API re-execution...")
+        if self._retest_output_dir is None:
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+            self._retest_output_dir = os.path.join("reports", f"{timestamp}-retest")
+            os.makedirs(self._retest_output_dir, exist_ok=True)
+            print(f"[RETEST] Saving results in: {self._retest_output_dir}")
+        print(f"[DEBUG] URL: {self._url}")
+        print(f"[DEBUG] Method: {self._method}")
+        print(f"[DEBUG] Headers: {self._headers}")
+
+        # Ensure headers are a dictionary
+        if isinstance(self._headers, str):
+            try:
+                self._headers = json.loads(self._headers)
+            except json.JSONDecodeError:
+                print(f"[ERROR] Could not decode headers: {self._headers}")
+                self._headers = {}
+
+        try:
+            response = requests.request(
+                method=self._method,
+                url=self._url,
+                headers=self._headers,
+                timeout=10
+            )
+            print(f"[RETEST] Executed: {self._method} {self._url}", f"Status Code: {response.status_code}", f"Response Body: {response.text}\n")
+            self.handle_retest_result(response)
+
+        except requests.RequestException as e:
+            print(f"[RETEST] Request failed: {e}")
+
+    def handle_retest_result(self, response):
+
+        status_code_folder = str(response.status_code)  # Ensure folder name is a string
+
+        # Create status code folder directly inside _retest_output_dir
+        status_dir = os.path.join(self._retest_output_dir, status_code_folder)
+        os.makedirs(status_dir, exist_ok=True)
+
+        # Save file using original filename
+        file_path = os.path.join(status_dir, self._file_name)
+
+        # Save response content
+        with open(file_path, 'w') as f:
+            try:
+                json.dump(response.json(), f, indent=2)
+            except Exception:
+                f.write(response.text)
+
+        print(f"Saved retest result to: {file_path}")
+

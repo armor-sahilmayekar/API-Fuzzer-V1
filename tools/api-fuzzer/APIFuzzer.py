@@ -7,6 +7,7 @@ import tempfile
 import traceback
 from logging import _nameToLevel as levelNames
 
+from modules.fuzzer.openapi_template_generator import RetestAPITemplateGenerator
 from modules.util.config import EnvConfig, HeaderBuilder
 from modules.fuzzer.fuzz_utils import FailedToParseFileException
 from modules.fuzzer.fuzzer import Fuzzer
@@ -77,23 +78,26 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--version',
                         action='version',
                         version=get_version())
+    parser.add_argument('--retest_dir',
+                        type=str,
+                        help='Path to specific report directory for retest')
     parser.add_argument('--status_code',
-                        dest='status_code',
                         type=int,
-                        required=False,
-                        help='HTTP status code to filter by')
-
-    # args = parser.parse_args('--folder',dest='folder')
-    parser.add_argument('--folder',
-                               dest='folder',
-                               type=str,
-                               required=False,
-                               help='Path to a specific folder to run tests from')
+                        help='Filter by status code')
 
     args = parser.parse_args()
+    # print("ARGS:", args.status_code, args.retest_dir)
+
     if args.src_file is None and args.src_url is None:
         argparse.ArgumentTypeError('No API definition source provided -s, --src_file or --src_url should be defined')
         exit()
+
+    # check whether it has status code passed and retest dir
+    if hasattr(args, 'status_code') and hasattr(args, 'retest_dir'):
+        print("ARGS:", args.status_code, args.retest_dir)
+    else:
+        print("ARGS: status_code or retest_dir not provided")
+    # print("ARGS:", args.status_code, args.retest_dir)
 
     headers = {}
     if args.headers is not None:
@@ -108,8 +112,10 @@ if __name__ == '__main__':
         args.report_dir = "./reports"
     if args.test_result_dst is not None:
         args.test_result_dst = "./reports_test"
+    is_retest = args.status_code is not None
 
-    prog = Fuzzer(report_dir="./reports",
+    prog = Fuzzer(report_dir=args.report_dir,
+                  retest_dir=args.retest_dir,
                   test_level=args.level,
                   alternate_url=args.alternate_url,
                   test_result_dst="./reports_test",
@@ -121,7 +127,20 @@ if __name__ == '__main__':
                   junit_report_path="./reports_test"
                   )
     try:
-        prog.prepare()
+        if is_retest:
+            print("Running in RETEST mode (filtered by status code {})".format(args.status_code))
+            retest_prog = RetestAPITemplateGenerator(
+                _report_dir=args.retest_dir,
+                _status_code=args.status_code
+            )
+            print("retest_prog :",retest_prog)
+            retest_prog.execute_retest(args.status_code)  # ✅ Ensure this method exists in Fuzzer
+        else:
+            print("Running in STANDARD FUZZER mode")
+            prog.prepare()
+            signal.signal(signal.SIGINT, signal_handler)
+            prog.run()
+
     except FailedToParseFileException:
         print('Failed to parse API definition')
         exit(1)
@@ -129,8 +148,3 @@ if __name__ == '__main__':
         print(f'Unexpected exception happened during fuzz test preparation: {traceback.print_stack(*sys.exc_info())}.\n'
               f' Feel free to export the issue',)
         exit(1)
-    signal.signal(signal.SIGINT, signal_handler)
-    # prog.run()
-    if args.status_code is not None and args.folder is not None:
-        prog.run(status_code=args.status_code, folder=args.folder)
-

@@ -34,7 +34,7 @@ class BaseTemplate(object):
             "body": self.data,
         }
         """
-        Possible paramters from request docs:
+        Possible parameters from request docs:
         :param method: method for the new :class:`Request` object.
         :param bytes url: URL for the new :class:`Request` object.
         :param params: (optional) Dictionary or bytes to be sent in the query string for the :class:`Request`.
