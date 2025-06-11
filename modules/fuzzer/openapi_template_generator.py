@@ -450,6 +450,7 @@ class RetestAPITemplateGenerator(OpenAPITemplateGenerator):
                 timeout=10
             )
             print(f"[RETEST] Executed: {self._method} {self._url}", f"Status Code: {response.status_code}", f"Response Body: {response.text}\n")
+            # print(f"[RETEST] Executed: {self._method} {self._url}", f"Status Code: {response.status_code}", f"Response Headers: {response.headers}\n")
             self.handle_retest_result(response)
 
         except requests.RequestException as e:
@@ -462,16 +463,36 @@ class RetestAPITemplateGenerator(OpenAPITemplateGenerator):
         # Create status code folder directly inside _retest_output_dir
         status_dir = os.path.join(self._retest_output_dir, status_code_folder)
         os.makedirs(status_dir, exist_ok=True)
-
         # Save file using original filename
         file_path = os.path.join(status_dir, self._file_name)
 
+
         # Save response content
         with open(file_path, 'w') as f:
-            try:
-                json.dump(response.json(), f, indent=2)
-            except Exception:
-                f.write(response.text)
+            if not response.text.strip():
+                print("[!] Response was empty. Writing empty file.")
+                f.write("EMPTY RESPONSE")
+            else:
+                full_data = {
+                    "request_url": getattr(response, "url", "N/A"),
+                    "status_code": response.status_code,
+                    "headers": dict(response.headers),
+                    # "body": None
+                }
+                # try:
+                #     full_data["body"] = response.json()  # Try parsing JSON body
+                # except Exception as e:
+                #     print(f"[!] Failed to parse JSON: {e}")
+                #     print(f"[!] Raw response text: {response.text}")
+                #     full_data["body"] = response.text  # Fallback to raw text
+
+                # Write full info as pretty JSON
+                json.dump(full_data, f, indent=2)
+
+        # print("\n🔁 Reading back from file:")
+        # with open(file_path, 'r') as f:
+        #     file_contents = f.read()
+        #     print(file_contents)
 
         print(f"Saved retest result to: {file_path}")
 

@@ -58,7 +58,6 @@ class Fuzzer(object):
 
     def prepare_retest(self,status_code):
         log.info("Preparing Retest Fuzzer")
-        _____________
 
         retest_template_generator = RetestAPITemplateGenerator(
             _report_dir=self.retest_dir,
