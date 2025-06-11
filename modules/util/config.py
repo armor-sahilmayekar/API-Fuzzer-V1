@@ -26,6 +26,7 @@ class EnvConfig:
 
     Usage:
     ------
+    >>> from modules.util.config import EnvConfig
     >>> config = EnvConfig()
     >>> print(config.token)
     >>> print(config.headers["Authorization"])
@@ -35,10 +36,13 @@ class EnvConfig:
     def __init__(self, dotenv_path: str = '.env'):
         load_dotenv(dotenv_path)
         self._token = self._get_env_var('TOKEN')
-        self._user = self._get_env_var('USER')
+        self._user = self._get_env_var('USERNAME')
         self._password = self._get_env_var('PASS')
         self._account_id = self._get_env_var('ACCOUNT_ID')
         self._log_level = self._get_env_var('LOG_LEVEL')
+        self._okta_base_url = self._get_env_var('OKTA_BASE_URL')
+        self._okta_client_id = self._get_env_var('OKTA_CLIENT_ID')
+        self._okta_redirect_url = self._get_env_var('OKTA_REDIRECT_URL')
 
     def _get_env_var(self, var_name: str) -> str:
         """Fetches an environment variable or raises an error if not found."""
@@ -54,6 +58,26 @@ class EnvConfig:
             return json.loads(raw)
         except json.JSONDecodeError:
             raise ValueError(f"Environment variable '{var_name}' must be a valid JSON string.")
+
+    @property
+    def okta_redirect_url(self) -> str:
+        return self._okta_redirect_url
+
+    @okta_redirect_url.setter
+    def okta_redirect_url(self, url: str) -> None:
+        self._okta_redirect_url = url
+
+    @property
+    def okta_client_id(self) -> str:
+        return self._okta_client_id
+
+    @okta_client_id.setter
+    def okta_client_id(self, okta_client_id: str) -> None:
+        self._okta_client_id = str(okta_client_id)
+
+    @property
+    def okta_base_url(self) -> str:
+        return self._okta_base_url
 
     @property
     def token(self) -> str:
