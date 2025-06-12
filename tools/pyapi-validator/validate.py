@@ -1,5 +1,5 @@
 import argparse
-# import os.path
+import os.path
 
 from modules.case.runner import TestCaseRunner
 
