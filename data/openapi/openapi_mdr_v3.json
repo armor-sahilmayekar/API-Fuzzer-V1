@@ -1150,6 +1150,76 @@
             }
           }
         }
+      },
+    "/msr": {
+        "get": {
+          "summary": "Get list of MSRs for a particular customer",
+          "responses": {
+            "200": {
+              "description": "All good",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "example": "XDR-dev"
+                        },
+                        "lastModified": {
+                          "type": "string",
+                          "format": "date-time",
+                          "example": "2024-12-26T03:09:55.900Z"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+    "/msr/{fileName}": {
+        "get": {
+          "summary": "Get an MSR file. Content-Type is dynamically fetched from S3 object metadata",
+          "parameters": [
+            {
+              "name": "fileName",
+              "in": "path",
+              "required": true,
+              "description": "Name of the file to fetch",
+              "schema": {
+                "type": "string",
+                "example": "msr-report.pdf"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "All good",
+              "headers": {
+                "Content-Type": {
+                  "description": "Content-Type is dynamically fetched from S3 object metadata",
+                  "schema": {
+                    "type": "string",
+                    "example": "application/pdf"
+                  }
+                }
+              },
+              "content": {
+                "application/octet-stream": {
+                  "schema": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        }
       }
 
   },
