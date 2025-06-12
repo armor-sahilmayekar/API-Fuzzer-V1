@@ -66,3 +66,12 @@ JWT test completed successfully.
 ```
 
 ### Script Breakdown
+- **`jwt_analyzer.py`**: Contains the `JWTAnalyzer` class, which handles decoding and analyzing the JWT token.
+- **`DumpJWT.py`**: Main script that takes the JWT token as input, invokes the `JWTAnalyzer` class, and prints the decoded payload and claim validation.
+## Expanding the Library
+
+If you'd like to extend or modify the functionality of the `jwt_tool` library, refer to the [JWT Tool Wiki](https://github.com/ticarpi/jwt_tool/wiki) for detailed instructions on contributing to and expanding the library.
+## Dependencies
+This tool requires the `jwt_tool` Python library for decoding JWT tokens. You can install it using the following command:
+```bash
+pip install jwt_tool
