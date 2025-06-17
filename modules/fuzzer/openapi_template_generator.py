@@ -361,9 +361,10 @@ class RetestAPITemplateGenerator(OpenAPITemplateGenerator):
     def __init__(self, _report_dir, _status_code):
         # If you want to support api_definition params, else remove these params
         TemplateGenerator.__init__(self)
+        self.old_response_code = None
         self._file_name = None
         self.mismatched_dir = None
-        self.status_code = None
+        self.status_code = _status_code
         self._headers = None
         self._url = None
         self._method = None
@@ -373,13 +374,14 @@ class RetestAPITemplateGenerator(OpenAPITemplateGenerator):
         # you can add additional properties as needed
         self.templates = set()
         self._retest_output_dir = None
-        print("in retest Class - ",_report_dir,self._status_code)
 
     def execute_retest(self, status_code=None):
-        self.logger.info(f"Preparing retest for directory: {self._report_dir} with status code: {status_code}")
+        # self.logger.info(f"Preparing retest for directory: {self._report_dir} with status code: {status_code}")
         # Implement your retest preparation logic here
         # For example, load JSON files from self._report_dir, filter by status_code, etc.
         # This method is custom for retest use case
+        self.old_response_code = self.status_code
+
 
         try:
             self.process_retest_api_resources()
@@ -389,7 +391,6 @@ class RetestAPITemplateGenerator(OpenAPITemplateGenerator):
     # You can override other methods or add new ones if needed
 
     def process_retest_api_resources(self):
-        print("Processing retest API resources")
         print("Report dir in process retest method:", self._report_dir)
         try:
             json_files = [
@@ -427,12 +428,8 @@ class RetestAPITemplateGenerator(OpenAPITemplateGenerator):
         print("[RETEST] Starting API re-execution...")
         if self._retest_output_dir is None:
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
-            self._retest_output_dir = os.path.join("reports", f"{timestamp}-retest")
+            self._retest_output_dir = os.path.join("reports", f"{timestamp} - retest")
             os.makedirs(self._retest_output_dir, exist_ok=True)
-            print(f"[RETEST] Saving results in: {self._retest_output_dir}")
-        print(f"[DEBUG] URL: {self._url}")
-        print(f"[DEBUG] Method: {self._method}")
-        print(f"[DEBUG] Headers: {self._headers}")
 
         # Ensure headers are a dictionary
         if isinstance(self._headers, str):
@@ -449,15 +446,12 @@ class RetestAPITemplateGenerator(OpenAPITemplateGenerator):
                 headers=self._headers,
                 timeout=10
             )
-            print(f"[RETEST] Executed: {self._method} {self._url}", f"Status Code: {response.status_code}", f"Response Body: {response.text}\n")
-            # print(f"[RETEST] Executed: {self._method} {self._url}", f"Status Code: {response.status_code}", f"Response Headers: {response.headers}\n")
             self.handle_retest_result(response)
 
         except requests.RequestException as e:
             print(f"[RETEST] Request failed: {e}")
 
     def handle_retest_result(self, response):
-
         status_code_folder = str(response.status_code)  # Ensure folder name is a string
 
         # Create status code folder directly inside _retest_output_dir
@@ -466,33 +460,24 @@ class RetestAPITemplateGenerator(OpenAPITemplateGenerator):
         # Save file using original filename
         file_path = os.path.join(status_dir, self._file_name)
 
-
         # Save response content
         with open(file_path, 'w') as f:
             if not response.text.strip():
                 print("[!] Response was empty. Writing empty file.")
                 f.write("EMPTY RESPONSE")
             else:
+
                 full_data = {
+                    # "status": "",  #error/passed - check status code of previous folder
+                    "test_number": self._file_name.replace(".json", ""),   # file name
+                    "report_number": self._file_name,
                     "request_url": getattr(response, "url", "N/A"),
-                    "status_code": response.status_code,
-                    "headers": dict(response.headers),
+                    "request_method": self._method,
+                    "request_headers": json.dumps(dict(response.request.headers)),
+                    "response_code": response.status_code,
+                    "status": "error" if response.status_code != self.old_response_code else "passed" #error/passed
                     # "body": None
                 }
-                # try:
-                #     full_data["body"] = response.json()  # Try parsing JSON body
-                # except Exception as e:
-                #     print(f"[!] Failed to parse JSON: {e}")
-                #     print(f"[!] Raw response text: {response.text}")
-                #     full_data["body"] = response.text  # Fallback to raw text
-
-                # Write full info as pretty JSON
                 json.dump(full_data, f, indent=2)
-
-        # print("\n🔁 Reading back from file:")
-        # with open(file_path, 'r') as f:
-        #     file_contents = f.read()
-        #     print(file_contents)
-
         print(f"Saved retest result to: {file_path}")
 
